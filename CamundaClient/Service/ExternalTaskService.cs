@@ -69,23 +69,40 @@ namespace CamundaClient.Service
 
         public void Complete(string workerId, string externalTaskId, Dictionary<string, object> variablesToPassToProcess)
         {
-            using (var http = helper.HttpClient("external-task/" + externalTaskId + "/complete"))
+            if (!CompleteAsync(workerId, externalTaskId, variablesToPassToProcess).Result)
             {
+                throw new EngineException("Could not complete external Task");
+            };
+        }
 
-                var request = new CompleteRequest();
-                request.WorkerId = workerId;
-                request.Variables = CamundaClientHelper.ConvertVariables(variablesToPassToProcess);
+        public async Task<bool> CompleteAsync(string workerId, string externalTaskId, Dictionary<string, object> variablesToPassToProcess)
+        {
+            using (var httpClient = helper.HttpClient($"external-task/{externalTaskId}/complete"))
+            {
+                var request = new CompleteRequest
+                {
+                    WorkerId = workerId,
+                    Variables = CamundaClientHelper.ConvertVariables(variablesToPassToProcess)
+                };
 
                 var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-                var response = http.PostAsync("", requestContent).Result;
+                var response = await httpClient.PostAsync("", requestContent);
                 if (!response.IsSuccessStatusCode)
                 {
                     throw new EngineException("Could not complete external Task: " + response.ReasonPhrase);
                 }
             }
-        }
 
+            return true;
+        }
         public void Failure(string workerId, string externalTaskId, string errorMessage, int retries, long retryTimeout)
+        {
+            if (!FailureAsync(workerId, externalTaskId, errorMessage, retries, retryTimeout).Result)
+            {
+                throw new EngineException("Could not report failure for external Task");
+            }
+        }
+        public async Task<bool> FailureAsync(string workerId, string externalTaskId, string errorMessage, int retries, long retryTimeout)
         {
             using (var http = helper.HttpClient("external-task/" + externalTaskId + "/failure"))
             {
@@ -96,15 +113,24 @@ namespace CamundaClient.Service
                 request.RetryTimeout = retryTimeout;
 
                 var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-                var response = http.PostAsync("", requestContent).Result;
+                var response = await http.PostAsync("", requestContent);
                 if (!response.IsSuccessStatusCode)
                 {
                     throw new EngineException("Could not report failure for external Task: " + response.ReasonPhrase);
                 }
             }
+
+            return true;
         }
 
         public void BpmnError(string workerId, string externalTaskId, string errorCode)
+        {
+            if(!BpmnErrorAsync(workerId, externalTaskId, errorCode).Result)
+            {
+                throw new EngineException("Could not report BPMN error for external Task");
+            }
+        }
+        public async Task<bool> BpmnErrorAsync(string workerId, string externalTaskId, string errorCode)
         {
             using (var http = helper.HttpClient($"/external-task/{externalTaskId}/bpmnError"))
             {
@@ -114,13 +140,15 @@ namespace CamundaClient.Service
                     ErrorCode = errorCode
                 };
                 var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-                var response = http.PostAsync("", requestContent).Result;
+                var response = await http.PostAsync("", requestContent);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     throw new EngineException("Could not report BPMN error for external Task: " + response.ReasonPhrase);
                 }
             }
+
+            return true;
         }
     }
 }
