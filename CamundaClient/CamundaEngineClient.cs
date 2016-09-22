@@ -1,6 +1,7 @@
 ﻿using CamundaClient.Service;
 using CamundaClient.Worker;
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -60,8 +61,8 @@ namespace CamundaClient
             // find all classes with CustomAttribute [ExternalTask("name")]
             var externalTaskWorkers =
                 from t in assembly.GetTypes()
-                let externalTaskTopicAttribute = t.GetCustomAttributes(typeof(ExternalTaskTopicAttribute), true).FirstOrDefault() as ExternalTaskTopicAttribute
-                let externalTaskVariableRequirements = t.GetCustomAttributes(typeof(ExternalTaskVariableRequirementsAttribute), true).FirstOrDefault() as ExternalTaskVariableRequirementsAttribute
+                let externalTaskTopicAttribute = t.GetTypeInfo().GetCustomAttributes(typeof(ExternalTaskTopicAttribute), true).FirstOrDefault() as ExternalTaskTopicAttribute
+                let externalTaskVariableRequirements = t.GetTypeInfo().GetCustomAttributes(typeof(ExternalTaskVariableRequirementsAttribute), true).FirstOrDefault() as ExternalTaskVariableRequirementsAttribute
                 where externalTaskTopicAttribute != null
                 select new Dto.ExternalTaskWorkerInfo
                 {
@@ -70,7 +71,7 @@ namespace CamundaClient
                     Retries = externalTaskTopicAttribute.Retries,
                     RetryTimeout = externalTaskTopicAttribute.RetryTimeout,
                     VariablesToFetch = new List<string>(externalTaskVariableRequirements?.VariablesToFetch),
-                    TaskAdapter = t.GetConstructor(Type.EmptyTypes)?.Invoke(null) as IExternalTaskAdapter
+                    TaskAdapter = t.GetTypeInfo().GetConstructor(Type.EmptyTypes)?.Invoke(null) as IExternalTaskAdapter
                 };
             return externalTaskWorkers;
         }
