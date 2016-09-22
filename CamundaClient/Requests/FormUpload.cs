@@ -21,17 +21,17 @@ namespace CamundaClient.Requests
 
         public static HttpWebResponse MultipartFormDataPost(string postUrl, string username, string password, Dictionary<string, object> postParameters)
         {
-            string formDataBoundary = String.Format("----------{0:N}", Guid.NewGuid());
-            string contentType = "multipart/form-data; boundary=" + formDataBoundary;
+            var formDataBoundary = String.Format("----------{0:N}", Guid.NewGuid());
+            var contentType = "multipart/form-data; boundary=" + formDataBoundary;
 
-            byte[] formData = GetMultipartFormData(postParameters, formDataBoundary);
+            var formData = GetMultipartFormData(postParameters, formDataBoundary);
 
             return PostForm(postUrl, username, password, contentType, formData);
         }
 
         private static HttpWebResponse PostForm(string postUrl, string username, string password, string contentType, byte[] formData)
         {
-            HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
+            var request = WebRequest.Create(postUrl) as HttpWebRequest;
 
             if (request == null)
             {
@@ -43,6 +43,7 @@ namespace CamundaClient.Requests
             request.ContentType = contentType;
             //request.UserAgent = userAgent;
             request.CookieContainer = new CookieContainer();
+#if NET46
             request.ContentLength = formData.Length;
 
             // You could add authentication here as well if needed:
@@ -52,25 +53,27 @@ namespace CamundaClient.Requests
                 request.AuthenticationLevel = System.Net.Security.AuthenticationLevel.MutualAuthRequested;
                 request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.Encoding.Default.GetBytes(username + ":" + password)));
             }
-
+#endif
             // Send the form data to the request.
-            using (Stream requestStream = request.GetRequestStream())
+            using (var requestStream = request.GetRequestStreamAsync().Result)
             {
                 requestStream.Write(formData, 0, formData.Length);
+#if NET46
                 requestStream.Close();
+#endif
                 requestStream.Dispose();
             }
 
-            return request.GetResponse() as HttpWebResponse;
+            return request.GetResponseAsync().Result as HttpWebResponse;
         }
 
         private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary)
         {
-            Stream formDataStream = new System.IO.MemoryStream();
+            var formDataStream = new System.IO.MemoryStream();
 
             // Thanks to feedback from commenter's, add a CRLF to allow multiple parameters to be added.
             // Skip it on the first parameter, add it to subsequent parameters.
-            bool needsCLRF = false;
+            var needsCLRF = false;
 
             foreach (var param in postParameters)
             {
@@ -80,7 +83,9 @@ namespace CamundaClient.Requests
                     foreach (var value in (List<object>)param.Value)
                     {
                         if (needsCLRF)
+                        {
                             formDataStream.Write(encoding.GetBytes("\r\n"), 0, encoding.GetByteCount("\r\n"));
+                        }
                         AddFormData(boundary, formDataStream, param.Key, value);
                         needsCLRF = true;
                     }
@@ -89,7 +94,9 @@ namespace CamundaClient.Requests
                 {
                     // only a single file
                     if (needsCLRF)
+                    {
                         formDataStream.Write(encoding.GetBytes("\r\n"), 0, encoding.GetByteCount("\r\n"));
+                    }
 
                     AddFormData(boundary, formDataStream, param.Key, param.Value);
                     needsCLRF = true;
@@ -97,14 +104,16 @@ namespace CamundaClient.Requests
             }
 
             // Add the end of the request.  Start with a newline
-            string footer = "\r\n--" + boundary + "--\r\n";
+            var footer = "\r\n--" + boundary + "--\r\n";
             formDataStream.Write(encoding.GetBytes(footer), 0, encoding.GetByteCount(footer));
 
             // Dump the Stream into a byte[]
             formDataStream.Position = 0;
-            byte[] formData = new byte[formDataStream.Length];
+            var formData = new byte[formDataStream.Length];
             formDataStream.Read(formData, 0, formData.Length);
+#if NET46
             formDataStream.Close();
+#endif
 
             formDataStream.Dispose();
 
@@ -117,7 +126,7 @@ namespace CamundaClient.Requests
             if (fileToUpload != null)
             {
                 // Add just the first part of this parameter, since we will write the file data directly to the Stream
-                string header = string.Format(
+                var header = string.Format(
                     CultureInfo.InvariantCulture,
                     "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n",
                     boundary,
@@ -132,7 +141,7 @@ namespace CamundaClient.Requests
             }
             else
             {
-                string postData = string.Format(
+                var postData = string.Format(
                     CultureInfo.InvariantCulture,
                     "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"\r\n\r\n{2}",
                     boundary,
