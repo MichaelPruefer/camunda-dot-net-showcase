@@ -69,37 +69,57 @@ namespace CamundaClient.Service
 
         public void Complete(string workerId, string externalTaskId, Dictionary<string, object> variablesToPassToProcess)
         {
-            var http = helper.HttpClient("external-task/" + externalTaskId + "/complete");
-
-            var request = new CompleteRequest();
-            request.WorkerId = workerId;
-            request.Variables = CamundaClientHelper.ConvertVariables(variablesToPassToProcess);
-
-            var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-            var response = http.PostAsync("", requestContent).Result;
-            http.Dispose();
-            if (!response.IsSuccessStatusCode)
+            using (var http = helper.HttpClient("external-task/" + externalTaskId + "/complete"))
             {
-                throw new EngineException("Could not complete external Task: " + response.ReasonPhrase);
+
+                var request = new CompleteRequest();
+                request.WorkerId = workerId;
+                request.Variables = CamundaClientHelper.ConvertVariables(variablesToPassToProcess);
+
+                var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
+                var response = http.PostAsync("", requestContent).Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new EngineException("Could not complete external Task: " + response.ReasonPhrase);
+                }
             }
         }
 
         public void Failure(string workerId, string externalTaskId, string errorMessage, int retries, long retryTimeout)
         {
-            var http = helper.HttpClient("external-task/" + externalTaskId + "/failure");
-
-            var request = new FailureRequest();
-            request.WorkerId = workerId;
-            request.ErrorMessage = errorMessage;
-            request.Retries = retries;
-            request.RetryTimeout = retryTimeout;
-
-            var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-            var response = http.PostAsync("", requestContent).Result;
-            http.Dispose();
-            if (!response.IsSuccessStatusCode)
+            using (var http = helper.HttpClient("external-task/" + externalTaskId + "/failure"))
             {
-                throw new EngineException("Could not report failure for external Task: " + response.ReasonPhrase);
+                var request = new FailureRequest();
+                request.WorkerId = workerId;
+                request.ErrorMessage = errorMessage;
+                request.Retries = retries;
+                request.RetryTimeout = retryTimeout;
+
+                var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
+                var response = http.PostAsync("", requestContent).Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new EngineException("Could not report failure for external Task: " + response.ReasonPhrase);
+                }
+            }
+        }
+
+        public void BpmnError(string workerId, string externalTaskId, string errorCode)
+        {
+            using (var http = helper.HttpClient($"/external-task/{externalTaskId}/bpmnError"))
+            {
+                var request = new
+                {
+                    WorkerId = workerId,
+                    ErrorCode = errorCode
+                };
+                var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
+                var response = http.PostAsync("", requestContent).Result;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new EngineException("Could not report BPMN error for external Task: " + response.ReasonPhrase);
+                }
             }
         }
     }
