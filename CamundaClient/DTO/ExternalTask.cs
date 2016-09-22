@@ -4,16 +4,16 @@ namespace CamundaClient.Dto
 {
     public class ExternalTask
     {
-        public string activityId { get; set; }
-        public string activityInstanceId { get; set; }
-        public string id { get; set; }
-        public int? retries { get; set; }
-        public Dictionary<string, Variable> variables { get; set; }
+        public string ActivityId { get; set; }
+        public string ActivityInstanceId { get; set; }
+        public string Id { get; set; }
+        public int? Retries { get; set; }
+        public Dictionary<string, Variable> Variables { get; set; }
+        public string TopicName { get; set; }
+        public string WorkerId { get; set; }
+        public int? Priority { get; set; }
 
-        public override string ToString()
-        {
-            return "ExternalTask [Id=" + id + ", ActivityId=" + activityId+"]";
-        }
+        public override string ToString() => $"ExternalTask [Id={Id}, ActivityId={ActivityId}]";
     }
 
 }

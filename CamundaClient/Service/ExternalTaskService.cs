@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using CamundaClient.Requests;
+using System.Threading.Tasks;
 
 namespace CamundaClient.Service
 {
@@ -17,25 +19,35 @@ namespace CamundaClient.Service
             this.helper = client;
         }
 
-        public IList<ExternalTask> FetchAndLockTasks(string workerId, int maxTasks, string topicName, long lockDurationInMilliseconds, List<string> variablesToFetch)
+        public IList<ExternalTask> FetchAndLockTasks(string workerId, int maxTasks, string topicName, long lockDurationInMilliseconds, IEnumerable<string> variablesToFetch)
         {
-            HttpClient http = helper.HttpClient("external-task/fetchAndLock");
 
-            FetchAndLockRequest request = new FetchAndLockRequest();
-            request.workerId = workerId;
-            request.maxTasks = maxTasks;
-            FetchAndLockTopic topic = new FetchAndLockTopic();
-            topic.topicName = topicName;
-            topic.lockDuration = lockDurationInMilliseconds;
-            topic.variables = variablesToFetch;
-            request.topics.Add(topic);
-            try {
-                var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-                HttpResponseMessage response = http.PostAsync("", requestContent).Result;
+            var lockRequest = new FetchAndLockRequest
+            {
+                WorkerId = workerId,
+                MaxTasks = maxTasks
+            };
+            var lockTopic = new FetchAndLockTopic
+            {
+                TopicName = topicName,
+                LockDuration = lockDurationInMilliseconds,
+                Variables = variablesToFetch
+            };
+            lockRequest.Topics.Add(lockTopic);
+
+            return FetchAndLockTasks(lockRequest);
+        }
+
+        public IList<ExternalTask> FetchAndLockTasks(FetchAndLockRequest fetchAndLockRequest)
+        {
+            var http = helper.HttpClient("external-task/fetchAndLock");
+            try
+            {
+                var requestContent = new StringContent(JsonConvert.SerializeObject(fetchAndLockRequest), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
+                var response = http.PostAsync("", requestContent).Result;
                 if (response.IsSuccessStatusCode)
                 {
-                    var tasks = JsonConvert.DeserializeObject<IEnumerable<ExternalTask>>(
-                        response.Content.ReadAsStringAsync().Result);
+                    var tasks = JsonConvert.DeserializeObject<IEnumerable<ExternalTask>>(response.Content.ReadAsStringAsync().Result);
 
                     http.Dispose();
                     return new List<ExternalTask>(tasks);
@@ -49,35 +61,22 @@ namespace CamundaClient.Service
             catch (Exception ex)
             {
                 http.Dispose();
-                // TODO: Handle Exception, add backoff
-                throw new EngineException("Could not fetch and lock tasks: " + ex.GetBaseException().Message, ex);
+                Console.WriteLine(ex.Message);
+                // TODO: Handle Exception, add back off
+                return new List<ExternalTask>();
             }
-        }
-
-        private class FetchAndLockRequest
-        {
-            public string workerId;
-            public int maxTasks;
-            public List<FetchAndLockTopic> topics = new List<FetchAndLockTopic>();
-        }
-
-        private class FetchAndLockTopic
-        {
-            public string topicName;
-            public long lockDuration;
-            public List<string> variables;
         }
 
         public void Complete(string workerId, string externalTaskId, Dictionary<string, object> variablesToPassToProcess)
         {
-            HttpClient http = helper.HttpClient("external-task/" + externalTaskId + "/complete");
+            var http = helper.HttpClient("external-task/" + externalTaskId + "/complete");
 
-            CompleteRequest request = new CompleteRequest();
-            request.workerId = workerId;
-            request.variables = helper.convertVariables(variablesToPassToProcess);
+            var request = new CompleteRequest();
+            request.WorkerId = workerId;
+            request.Variables = CamundaClientHelper.ConvertVariables(variablesToPassToProcess);
 
             var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-            HttpResponseMessage response = http.PostAsync("", requestContent).Result;
+            var response = http.PostAsync("", requestContent).Result;
             http.Dispose();
             if (!response.IsSuccessStatusCode)
             {
@@ -87,35 +86,21 @@ namespace CamundaClient.Service
 
         public void Failure(string workerId, string externalTaskId, string errorMessage, int retries, long retryTimeout)
         {
-            HttpClient http = helper.HttpClient("external-task/" + externalTaskId + "/failure");
+            var http = helper.HttpClient("external-task/" + externalTaskId + "/failure");
 
-            FailureRequest request = new FailureRequest();
-            request.workerId = workerId;
-            request.errorMessage = errorMessage;
-            request.retries = retries;
-            request.retryTimeout = retryTimeout;
+            var request = new FailureRequest();
+            request.WorkerId = workerId;
+            request.ErrorMessage = errorMessage;
+            request.Retries = retries;
+            request.RetryTimeout = retryTimeout;
 
             var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-            HttpResponseMessage response = http.PostAsync("", requestContent).Result;
+            var response = http.PostAsync("", requestContent).Result;
             http.Dispose();
             if (!response.IsSuccessStatusCode)
             {
                 throw new EngineException("Could not report failure for external Task: " + response.ReasonPhrase);
             }
         }
-
-        private class CompleteRequest
-        {
-            public Dictionary<string, Variable> variables { get; set; }
-            public string workerId { get; set; }
-        }
-        private class FailureRequest
-        {
-            public string workerId { get; set; }
-            public string errorMessage { get; set; }
-            public int retries { get; set; }
-            public long retryTimeout{ get; set; }
-        }
     }
-
 }

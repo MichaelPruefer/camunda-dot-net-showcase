@@ -26,10 +26,10 @@ namespace SimpleCalculationProcess
 
         private static void writeTasksToConsole(CamundaEngineClient camunda)
         {
-            var tasks = camunda.HumanTaskService().LoadTasks();
+            var tasks = camunda.HumanTaskService.LoadTasks();
             foreach (var task in tasks)
             {
-                Console.WriteLine(task.name);
+                Console.WriteLine(task.Name);
             }
         }
 

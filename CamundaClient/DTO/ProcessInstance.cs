@@ -4,13 +4,10 @@ namespace CamundaClient.Dto
 {
     public class ProcessInstance
     {
-        public string id { get; set; }
-        public string businessKey { get; set; }
+        public string Id { get; set; }
+        public string BusinessKey { get; set; }
 
-        public override string ToString()
-        {
-            return "ProcessInstance [Id=" + id + ", BusinessKey=" + businessKey + "]";
-        }
+        public override string ToString() => $"ProcessInstance [Id={Id}, BusinessKey={BusinessKey}]";
     }
 
 }

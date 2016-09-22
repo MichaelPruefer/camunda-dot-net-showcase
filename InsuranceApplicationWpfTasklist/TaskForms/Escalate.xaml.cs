@@ -24,7 +24,7 @@ namespace InsuranceApplicationWpfTasklist.TaskForms
             this.Tasklist = tasklist;
             this.Task = task;
 
-            Variables = Tasklist.Camunda.HumanTaskService().LoadVariables(task.id);
+            Variables = Tasklist.Camunda.HumanTaskService.LoadVariables(task.Id);
         }
 
     }

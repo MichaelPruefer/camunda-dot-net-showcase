@@ -26,7 +26,7 @@ namespace InsuranceApplicationWpfTasklist.TaskForms.EN
         {
             this.Tasklist = tasklist;
             this.Task = task;
-            TaskVariables = Tasklist.Camunda.HumanTaskService().LoadVariables(task.id);
+            TaskVariables = Tasklist.Camunda.HumanTaskService.LoadVariables(task.Id);
             NewVariables = new Dictionary<string, object>();
             NewVariables.Add("approved", false);
         }
@@ -34,14 +34,14 @@ namespace InsuranceApplicationWpfTasklist.TaskForms.EN
         private void buttonCompleteTaskl_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             try {
-                Tasklist.Camunda.HumanTaskService().Complete(Task.id, NewVariables);
+                Tasklist.Camunda.HumanTaskService.Complete(Task.Id, NewVariables);
             }
             catch (Exception ex)
             {
                 MessageBox.Show("There was an error completing the task: " + ex.Message + "\nPlease investigate and try again.", "Could not complete task", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            Tasklist.hideDetails();
-            Tasklist.reloadTasks();
+            Tasklist.HideDetails();
+            Tasklist.ReloadTasks();
         }
     }
 }

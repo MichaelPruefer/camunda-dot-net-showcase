@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using CamundaClient.Requests;
 using System.Text;
 
 namespace CamundaClient.Service
@@ -17,38 +18,28 @@ namespace CamundaClient.Service
             this.helper = client;
         }
 
-        private class StartProcessInstanceRequest
-        {
-            public Dictionary<string, Variable> variables;
-            public string businessKey;
-        }
+        public string StartProcessInstance(string processDefinitionKey, Dictionary<string, object> variables) => StartProcessInstance(processDefinitionKey, null, variables);
 
-        public string StartProcessInstance(String processDefinitionKey, Dictionary<string, object> variables)
+        public string StartProcessInstance(string processDefinitionKey, string businessKey, Dictionary<string, object> variables)
         {
-            return StartProcessInstance(processDefinitionKey, null, variables);
-        }
+            var http = helper.HttpClient("process-definition/key/" + processDefinitionKey + "/start");
 
-        public string StartProcessInstance(String processDefinitionKey, String businessKey, Dictionary<string, object> variables)
-        {
-            HttpClient http = helper.HttpClient("process-definition/key/" + processDefinitionKey + "/start");
-
-            StartProcessInstanceRequest request = new StartProcessInstanceRequest();
-            request.businessKey = businessKey;
-            request.variables = helper.convertVariables(variables);
+            var request = new CompleteRequest();
+            request.Variables = CamundaClientHelper.ConvertVariables(variables);
+            request.BusinessKey = businessKey;
 
             var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-            HttpResponseMessage response = http.PostAsync("", requestContent).Result;
+            var response = http.PostAsync("", requestContent).Result;
             if (response.IsSuccessStatusCode)
             {
-                var processInstance = JsonConvert.DeserializeObject<ProcessInstance>(
-                    response.Content.ReadAsStringAsync().Result);
+                var processInstance = JsonConvert.DeserializeObject<ProcessInstance>(response.Content.ReadAsStringAsync().Result);
 
                 http.Dispose();
-                return processInstance.id;
+                return processInstance.Id;
             }
             else
             {
-                var errorMsg = response.Content.ReadAsStringAsync();
+                //var errorMsg = response.Content.ReadAsStringAsync();
                 http.Dispose();
                 throw new EngineException(response.ReasonPhrase);
             }
@@ -57,19 +48,18 @@ namespace CamundaClient.Service
 
         public Dictionary<string, object> LoadVariables(string taskId)
         {
-            HttpClient http = helper.HttpClient("task/" + taskId + "/variables");
+            var http = helper.HttpClient("task/" + taskId + "/variables");
 
-            HttpResponseMessage response = http.GetAsync("").Result;
+            var response = http.GetAsync("").Result;
             if (response.IsSuccessStatusCode)
             {
                 // Successful - parse the response body
-                var variableResponse = JsonConvert.DeserializeObject< Dictionary<string, Variable>>(
-                    response.Content.ReadAsStringAsync().Result);
+                var variableResponse = JsonConvert.DeserializeObject< Dictionary<string, Variable>>(response.Content.ReadAsStringAsync().Result);
 
-                Dictionary<string, object> variables = new Dictionary<string, object>();
+                var variables = new Dictionary<string, object>();
                 foreach (var variable in variableResponse)
                 {
-                    variables.Add(variable.Key, variable.Value.value);
+                    variables.Add(variable.Key, variable.Value.Value);
                 }
                 http.Dispose();
                 return variables;

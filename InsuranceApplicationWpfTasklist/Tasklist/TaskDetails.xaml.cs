@@ -19,22 +19,22 @@ namespace InsuranceApplicationWpfTasklist.Tasklist
         {
             InitializeComponent();
 
-            cockpiturl = CamundaEngineClient.COCKPIT_URL + "#/process-instance/" + task.processInstanceId + "/runtime";
+            cockpiturl = CamundaEngineClient.COCKPIT_URL + "#/process-instance/" + task.ProcessInstanceId + "/runtime";
             CockpitUrlText.Text = cockpiturl;
 
-            taskDetailsListView.Items.Add(new TaskProperty("Process Instance Id", task.processInstanceId));
-            taskDetailsListView.Items.Add(new TaskProperty("Process Definition Id", task.processDefinitionId));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Assignee", task.assignee));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Creation Date", String.Format("{0:dd/MM/yyyy HH:mm:ss}", task.created)));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Definition Key", task.taskDefinitionKey));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Description", task.description));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Due Date", String.Format("{0:dd/MM/yyyy HH:mm:ss}", task.due)));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Follow Up Date", String.Format("{0:dd/MM/yyyy HH:mm:ss}", task.followUp)));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Form Key", task.formKey));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Id", task.id));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Name", task.name));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Owner", task.owner));
-            taskDetailsListView.Items.Add(new TaskProperty("Task Priority", task.priority));
+            taskDetailsListView.Items.Add(new TaskProperty("Process Instance Id", task.ProcessInstanceId));
+            taskDetailsListView.Items.Add(new TaskProperty("Process Definition Id", task.ProcessDefinitionId));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Assignee", task.Assignee));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Creation Date", String.Format("{0:dd/MM/yyyy HH:mm:ss}", task.Created)));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Definition Key", task.TaskDefinitionKey));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Description", task.Description));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Due Date", String.Format("{0:dd/MM/yyyy HH:mm:ss}", task.Due)));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Follow Up Date", String.Format("{0:dd/MM/yyyy HH:mm:ss}", task.FollowUp)));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Form Key", task.FormKey));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Id", task.Id));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Name", task.Name));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Owner", task.Owner));
+            taskDetailsListView.Items.Add(new TaskProperty("Task Priority", task.Priority));
         }
 
         private void NavigateToCockpit(object sender, RequestNavigateEventArgs e)
@@ -49,12 +49,12 @@ namespace InsuranceApplicationWpfTasklist.Tasklist
     }
 
     public class TaskProperty {
-        public string property { get;  }
-        public string value { get; }
+        public string Property { get;  }
+        public string Value { get; }
         public TaskProperty(string property, string value)
         {
-            this.property = property;
-            this.value = value;
+            this.Property = property;
+            this.Value = value;
         }
     }
 }

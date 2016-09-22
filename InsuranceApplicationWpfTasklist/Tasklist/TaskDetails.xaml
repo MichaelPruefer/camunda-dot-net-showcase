@@ -24,8 +24,8 @@
         <ListView x:Name="taskDetailsListView" SelectionMode="Single" Grid.Row="1" >
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Property" DisplayMemberBinding="{Binding Path=property}" Width="Auto" />
-                    <GridViewColumn Header="Value" DisplayMemberBinding="{Binding Path=value}" Width="Auto"/>
+                    <GridViewColumn Header="Property" DisplayMemberBinding="{Binding Path=Property}" Width="Auto" />
+                    <GridViewColumn Header="Value" DisplayMemberBinding="{Binding Path=Value}" Width="Auto"/>
                 </GridView>
             </ListView.View>
         </ListView>

@@ -4,14 +4,11 @@ namespace CamundaClient.Dto
 {
     public class Deployment
     {
-        public string id { get; set; }
-        public string name { get; set; }
-        public string source { get; set; }
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Source { get; set; }
 
-        public override string ToString()
-        {
-            return "Deployment [Id=" + id + ", Name=" + name + "]";
-        }
+        public override string ToString() => $"Deployment [Id={Id}, Name={Name}]";
     }
 
 }

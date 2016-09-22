@@ -2,16 +2,13 @@
 {
     public class ProcessDefinition
     {
-        public string id { get; set; }
-        public string name { get; set; }
-        public string key { get; set; }
-        public string version { get; set; }
-        public string startFormKey { get; set; }
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Key { get; set; }
+        public string Version { get; set; }
+        public string StartFormKey { get; set; }
 
-        public override string ToString()
-        {
-            return "ProcessDefinition [Id=" + id + ", Key=" + key + ", Name=" + name + "]";
-        }
+        public override string ToString() => $"ProcessDefinition [Id={Id}, Key={Key}, Name={Name}]";
     }
 
 

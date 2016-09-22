@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using CamundaClient.Requests;
 
 namespace CamundaClient.Service
 {
@@ -19,22 +20,18 @@ namespace CamundaClient.Service
             this.helper = client;
         }
 
-        public IList<HumanTask> LoadTasks()
-        {
-            return LoadTasks(new Dictionary<string, string>());
-        }
+        public IList<HumanTask> LoadTasks() => LoadTasks(new Dictionary<string, string>());
 
         public IList<HumanTask> LoadTasks(IDictionary<string, string> queryParameters)
         {
-            string s = string.Join("&", queryParameters.Select(x => x.Key + "=" + x.Value));
-            HttpClient http = helper.HttpClient("task/?" + s);
+            var queryString = string.Join("&", queryParameters.Select(x => x.Key + "=" + x.Value));
+            var http = helper.HttpClient("task/?" + queryString);
 
-            HttpResponseMessage response = http.GetAsync("").Result;
+            var response = http.GetAsync("").Result;
             if (response.IsSuccessStatusCode)
             {
                 // Successful - parse the response body
-                var tasks = JsonConvert.DeserializeObject<IEnumerable < HumanTask >> (
-                    response.Content.ReadAsStringAsync().Result);
+                var tasks = JsonConvert.DeserializeObject<IEnumerable<HumanTask>>(response.Content.ReadAsStringAsync().Result);
                 http.Dispose();
                 return new List<HumanTask>(tasks);
             }
@@ -49,29 +46,29 @@ namespace CamundaClient.Service
 
         public Dictionary<string, object> LoadVariables(string taskId)
         {
-            HttpClient http = helper.HttpClient("task/" + taskId + "/variables");
+            var http = helper.HttpClient("task/" + taskId + "/variables");
 
-            HttpResponseMessage response = http.GetAsync("").Result;
+            var response = http.GetAsync("").Result;
             if (response.IsSuccessStatusCode)
             {
                 // Successful - parse the response body
-                var variableResponse = JsonConvert.DeserializeObject<Dictionary < string, Variable>> (
-                    response.Content.ReadAsStringAsync().Result);
+                var variableResponse = JsonConvert.DeserializeObject<Dictionary<string, Variable>>(response.Content.ReadAsStringAsync().Result);
 
-                Dictionary< string, object>  variables = new Dictionary<string, object>();
+                Dictionary<string, object> variables = new Dictionary<string, object>();
                 foreach (var variable in variableResponse)
                 {
-                    if (variable.Value.type=="object")
+                    if (variable.Value.Type == "object")
                     {
-                        string stringValue = (string)variable.Value.value;
+                        string stringValue = (string)variable.Value.Value;
                         // lets assume we only work with JSON serialized values 
                         stringValue = stringValue.Remove(stringValue.Length - 1).Remove(0, 1); // remove one bracket from {{ and }}
-                        JToken jsonObject = JContainer.Parse(stringValue);
+                        var jsonObject = JContainer.Parse(stringValue);
 
                         variables.Add(variable.Key, jsonObject);
                     }
-                    else { 
-                        variables.Add(variable.Key, variable.Value.value);
+                    else
+                    {
+                        variables.Add(variable.Key, variable.Value.Value);
                     }
                 }
                 http.Dispose();
@@ -84,24 +81,18 @@ namespace CamundaClient.Service
             }
         }
 
-        private class CompleteTaskRequest
+        public void Complete(string taskId, Dictionary<string, object> variables)
         {
-            public Dictionary<string, Variable> variables;
-        }
+            var http = helper.HttpClient("task/" + taskId + "/complete");
 
-
-        public void Complete(String taskId, Dictionary<string, object> variables)
-        {
-            HttpClient http = helper.HttpClient("task/" + taskId + "/complete");
-
-            CompleteTaskRequest request = new CompleteTaskRequest();
-            request.variables = helper.convertVariables(variables);
+            var request = new CompleteRequest();
+            request.Variables = CamundaClientHelper.ConvertVariables(variables);
 
             var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-            HttpResponseMessage response = http.PostAsync("", requestContent).Result;
+            var response = http.PostAsync("", requestContent).Result;
             if (!response.IsSuccessStatusCode)
             {
-                var errorMsg = response.Content.ReadAsStringAsync();
+                //var errorMsg = response.Content.ReadAsStringAsync();
                 http.Dispose();
                 throw new EngineException(response.ReasonPhrase);
             }

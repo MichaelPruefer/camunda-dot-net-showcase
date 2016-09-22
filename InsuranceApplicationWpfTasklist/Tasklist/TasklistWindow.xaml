@@ -40,11 +40,11 @@
                   Background="{x:Null}" FontSize="16">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Created" DisplayMemberBinding="{Binding Path=created, StringFormat='{}{0:dd.MM.yyyy HH:MM:ss}'}" />
-                    <GridViewColumn Header="Prio" DisplayMemberBinding="{Binding Path=priority}" />
-                    <GridViewColumn Header="Task" DisplayMemberBinding="{Binding Path=name}" />
-                    <GridViewColumn Header="Assignee" DisplayMemberBinding="{Binding Path=assignee}"/>
-                    <GridViewColumn Header="Due Date" DisplayMemberBinding="{Binding Path=due, StringFormat='{}{0:dd.MM.yyyy}'}"/>
+                    <GridViewColumn Header="Created" DisplayMemberBinding="{Binding Path=Created, StringFormat='{}{0:dd.MM.yyyy HH:MM:ss}'}" />
+                    <GridViewColumn Header="Prio" DisplayMemberBinding="{Binding Path=Priority}" />
+                    <GridViewColumn Header="Task" DisplayMemberBinding="{Binding Path=Name}" />
+                    <GridViewColumn Header="Assignee" DisplayMemberBinding="{Binding Path=Assignee}"/>
+                    <GridViewColumn Header="Due Date" DisplayMemberBinding="{Binding Path=Due, StringFormat='{}{0:dd.MM.yyyy}'}"/>
                 </GridView>
             </ListView.View>
         </ListView>

@@ -24,8 +24,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -53,23 +54,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CamundaClientExtensions.cs" />
     <Compile Include="CamundaClientHelper.cs" />
-    <Compile Include="DTO\Deployment.cs" />
+    <Compile Include="Dto\ExternalTaskWorkerInfo.cs" />
+    <Compile Include="Dto\FetchAndLockTopic.cs" />
+    <Compile Include="Dto\FileParameter.cs" />
+    <Compile Include="Dto\StartForm.cs" />
+    <Compile Include="Dto\Deployment.cs" />
     <Compile Include="EngineException.cs" />
-    <Compile Include="DTO\Variable.cs" />
-    <Compile Include="DTO\ProcessInstance.cs" />
-    <Compile Include="DTO\ProcessDefinition.cs" />
-    <Compile Include="Worker\ExternalTaskVariableRequirements.cs" />
+    <Compile Include="Dto\Variable.cs" />
+    <Compile Include="Dto\ProcessInstance.cs" />
+    <Compile Include="Dto\ProcessDefinition.cs" />
+    <Compile Include="Requests\CompleteRequest.cs" />
+    <Compile Include="Requests\FailureRequest.cs" />
+    <Compile Include="Requests\FetchAndLockRequest.cs" />
+    <Compile Include="Requests\FormUpload.cs" />
+    <Compile Include="Worker\ExternalTaskVariableRequirementsAttribute.cs" />
     <Compile Include="Worker\ExternalTaskWorker.cs" />
-    <Compile Include="Worker\ExternalTaskTopic.cs" />
+    <Compile Include="Worker\ExternalTaskTopicAttribute.cs" />
     <Compile Include="Service\ExternalTaskService.cs" />
-    <Compile Include="DTO\ExternalTask.cs" />
+    <Compile Include="Dto\ExternalTask.cs" />
     <Compile Include="Service\BpmnWorkflowService.cs" />
     <Compile Include="Service\RepositoryService.cs" />
     <Compile Include="CamundaEngineClient.cs" />
     <Compile Include="Worker\ExternalTaskAdapter.cs" />
     <Compile Include="Service\HumanTaskService.cs" />
-    <Compile Include="DTO\HumanTask.cs" />
+    <Compile Include="Dto\HumanTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

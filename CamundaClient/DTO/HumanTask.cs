@@ -5,25 +5,22 @@ namespace CamundaClient.Dto
 {
     public class HumanTask
     {
-        public string id { get; set; }
-        public string name { get; set; }
-        public string assignee { get; set; }
-        public string owner { get; set; }
-        public DateTime? created { get; set; }
-        public DateTime? due { get; set; }
-        public DateTime? followUp { get; set; }
-        public string description { get; set; }
-        public string priority { get; set; }
-        public string formKey { get; set; }
-        public string processInstanceId { get; set; }
-        public string processDefinitionId { get; set; }
-        public string taskDefinitionKey { get; set; }
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Assignee { get; set; }
+        public string Owner { get; set; }
+        public DateTime? Created { get; set; }
+        public DateTime? Due { get; set; }
+        public DateTime? FollowUp { get; set; }
+        public string Description { get; set; }
+        public string Priority { get; set; }
+        public string FormKey { get; set; }
+        public string ProcessInstanceId { get; set; }
+        public string ProcessDefinitionId { get; set; }
+        public string TaskDefinitionKey { get; set; }
         // more attributes see https://docs.camunda.org/manual/latest/reference/rest/task/get-query/
 
-        public override string ToString()
-        {
-            return "HumanTask [Id=" + id + ", Name=" + name + "]";
-        }
+        public override string ToString() => $"HumanTask [Id={Id}, Name={Name}]";
     }
 
 

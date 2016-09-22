@@ -14,7 +14,7 @@ namespace InsuranceApplicationWpfTasklist.Worker
 
         public void Execute(ExternalTask externalTask, ref Dictionary<string, object> resultVariables)
         {
-            string email = (string)externalTask.variables["email"].value;
+            string email = (string)externalTask.Variables["email"].Value;
 
             MailMessage mail = new MailMessage("demo@camunda.com", email);
             SmtpClient client = new SmtpClient();
@@ -23,10 +23,10 @@ namespace InsuranceApplicationWpfTasklist.Worker
             client.UseDefaultCredentials = false;
             client.Host = "mail.camunda.com";
             client.Credentials = new NetworkCredential("demo@mx.camunda.com", "28484234386345");
-            if ((Boolean)externalTask.variables["approved"].value)
+            if ((bool)externalTask.Variables["approved"].Value)
             {
                 mail.Subject = "Your insurance policy was issued";
-                mail.Body = "We are happy to let you know we issued your insurance with number " + (string)externalTask.variables["policyId"].value;
+                mail.Body = "We are happy to let you know we issued your insurance with number " + (string)externalTask.Variables["policyId"].Value;
             } else {
                 mail.Subject = "Your insurance application was rejected";
                 mail.Body = "We are sorry, but we rejected your application. Have a good day!";

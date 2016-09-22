@@ -24,34 +24,34 @@ namespace InsuranceApplicationWpfTasklist
             Closing += OnWindowClosing;
             this.Camunda = new CamundaEngineClient();
 
-            startup();
+            Startup();
         }
 
         /**
         * TODO: Make more robust to allow startup if Camunda is not available
         */
-        public void startup()
+        public void Startup()
         {
             Camunda.Startup();
 
-            reloadTasks();
-            loadProcessDefinitions();
+            ReloadTasks();
+            LoadProcessDefinitions();
         }
 
-        private void loadProcessDefinitions()
+        private void LoadProcessDefinitions()
         {
-            var processDefinitions = Camunda.RepositoryService().LoadProcessDefinitions(true);
+            var processDefinitions = Camunda.RepositoryService.LoadProcessDefinitions(true);
             processDefinitionListBox.Items.Clear();
-            processDefinitionListBox.ItemsSource = processDefinitions.OrderBy(pd => pd.name).ToList(); // add them sorted by name
+            processDefinitionListBox.ItemsSource = processDefinitions.OrderBy(pd => pd.Name).ToList(); // add them sorted by name
             processDefinitionListBox.SelectedIndex = 0;
 
             processDefinitionListBox.DisplayMemberPath = "name";
         }
 
-        public void reloadTasks()
+        public void ReloadTasks()
         {
-            var tasks = Camunda.HumanTaskService().LoadTasks();
-            taskListView.ItemsSource = tasks.OrderByDescending(task => task.created).ToList(); // add them ordered by creation date
+            var tasks = Camunda.HumanTaskService.LoadTasks();
+            taskListView.ItemsSource = tasks.OrderByDescending(task => task.Created).ToList(); // add them ordered by creation date
             /*
             Assembly thisExe = Assembly.GetEntryAssembly();
             var htmlStream = thisExe.GetManifestResourceStream("InsuranceApplicationWpfTasklist.Tasklist.diagram.html");
@@ -66,10 +66,10 @@ namespace InsuranceApplicationWpfTasklist
 
         private void buttonReload_Click(object sender, RoutedEventArgs e)
         {
-            reloadTasks();
+            ReloadTasks();
         }
 
-        public void showDetails(string name, object content, Boolean firstTab) 
+        public void ShowDetails(string name, object content, Boolean firstTab) 
         {
             if (firstTab)
             {
@@ -92,63 +92,63 @@ namespace InsuranceApplicationWpfTasklist
             }
         }
 
-        public void hideDetails()
+        public void HideDetails()
         {
             taskFormTabControl.Items.Clear();
             taskFormTabControl.Visibility = Visibility.Hidden;
         }
 
-        private void showSelectedTask()
+        private void ShowSelectedTask()
         {
             HumanTask task = (HumanTask)taskListView.SelectedItem;
-            if (taskListView.SelectedIndex == -1 || task == null || task.formKey == null)
+            if (taskListView.SelectedIndex == -1 || task == null || task.FormKey == null)
             {
-                hideDetails();
+                HideDetails();
                 return;
             }
             try
             {
-                CamundaTaskForm taskFormPage = (CamundaTaskForm)Activator.CreateInstance(Type.GetType(task.formKey));
+                CamundaTaskForm taskFormPage = (CamundaTaskForm)Activator.CreateInstance(Type.GetType(task.FormKey));
                 taskFormPage.initialize(this, task);
-                showDetails("Task Form", taskFormPage, true);
-                showDetails("Task Details", new TaskDetails(task), false);
+                ShowDetails("Task Form", taskFormPage, true);
+                ShowDetails("Task Details", new TaskDetails(task), false);
             }
             catch (Exception ex)
             {
                 // Could not load form - maybe no task for .NET tasklist!
-                hideDetails();
+                HideDetails();
             }
         }
 
         private void taskListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            showSelectedTask();
+            ShowSelectedTask();
         }
 
         private void buttonStartInsuranceApplication_Click(object sender, RoutedEventArgs e)
         {
             ProcessDefinition processDefinition = (ProcessDefinition)processDefinitionListBox.SelectedValue;
-            if (processDefinitionListBox.SelectedIndex == -1 || processDefinition == null || processDefinition.startFormKey == null)
+            if (processDefinitionListBox.SelectedIndex == -1 || processDefinition == null || processDefinition.StartFormKey == null)
             {
-                hideDetails();
+                HideDetails();
                 return;
             }
             try
             {
-                CamundaStartForm startFormPage = (CamundaStartForm)Activator.CreateInstance(Type.GetType(processDefinition.startFormKey));
+                CamundaStartForm startFormPage = (CamundaStartForm)Activator.CreateInstance(Type.GetType(processDefinition.StartFormKey));
                 startFormPage.initialize(this, processDefinition);
-                showDetails("Start New '" + processDefinition.name + "'", startFormPage, true);
+                ShowDetails("Start New '" + processDefinition.Name + "'", startFormPage, true);
             }
             catch (Exception ex)
             {
                 // Could not load form - maybe no form key defined for .NET tasklist!
-                hideDetails();
+                HideDetails();
             }
         }
 
         private void taskListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            showSelectedTask();
+            ShowSelectedTask();
         }
     }
 }

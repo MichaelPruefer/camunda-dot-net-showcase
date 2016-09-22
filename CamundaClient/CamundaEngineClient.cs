@@ -9,53 +9,31 @@ namespace CamundaClient
 
     public class CamundaEngineClient
     {
-        public static string DEFAULT_URL = "http://localhost:8080/engine-rest/engine/default/";
-        public static string COCKPIT_URL = "http://localhost:8080/camunda/app/cockpit/default/";
+        public const string DEFAULT_URL = "http://localhost:8080/engine-rest/engine/default/";
+        public const string COCKPIT_URL = "http://localhost:8080/camunda/app/cockpit/default/";
 
-        private IList<ExternalTaskWorker> workers = new List<ExternalTaskWorker>();
-        private string RestUrl;
-        private string RestUsername;
-        private string RestPassword;
-        private CamundaClientHelper helper;
+        private IList<ExternalTaskWorker> _workers = new List<ExternalTaskWorker>();
+        private CamundaClientHelper _camundaClientHelper;
 
-        public CamundaEngineClient()
+        public CamundaEngineClient() : this(new Uri(DEFAULT_URL), null, null) { }
+
+        public CamundaEngineClient(Uri restUrl, string userName, string password)
         {
-            this.RestUrl = DEFAULT_URL;
-            helper = new CamundaClientHelper(this.RestUrl, this.RestUsername, this.RestPassword);
+            _camundaClientHelper = new CamundaClientHelper(restUrl, userName, password);
         }
 
-        public CamundaEngineClient(string restUrl, string userName, string password)
-        {
-            this.RestUrl = restUrl;
-            this.RestUsername = userName;
-            this.RestPassword = password;
-            helper = new CamundaClientHelper(this.RestUrl, this.RestUsername, this.RestPassword);
-        }
+        public BpmnWorkflowService BpmnWorkflowService => new BpmnWorkflowService(_camundaClientHelper);
 
-        public BpmnWorkflowService BpmnWorkflowService()
-        {
-            return new BpmnWorkflowService(helper);
-        }
+        public HumanTaskService HumanTaskService => new HumanTaskService(_camundaClientHelper);
 
-        public HumanTaskService HumanTaskService()
-        {
-            return new HumanTaskService(helper);
-        }
+        public RepositoryService RepositoryService => new RepositoryService(_camundaClientHelper);
 
-        public RepositoryService RepositoryService()
-        {
-            return new RepositoryService(helper);
-        }
-
-        public ExternalTaskService ExternalTaskService()
-        {
-            return new ExternalTaskService(helper);
-        }
+        public ExternalTaskService ExternalTaskService => new ExternalTaskService(_camundaClientHelper);
 
         public void Startup()
         {
             this.StartWorkers();
-            this.RepositoryService().AutoDeploy();
+            this.RepositoryService.AutoDeploy();
         }
 
         public void Shutdown()
@@ -66,42 +44,40 @@ namespace CamundaClient
         public void StartWorkers()
         {
             var assembly = System.Reflection.Assembly.GetEntryAssembly();
-            // find all classes with CustomAttribute [ExternalTask("name")]
-            var externalTaskWorkers =
-                // from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                from t in assembly.GetTypes()
-                let attributes = t.GetCustomAttributes(typeof(ExternalTaskTopic), true)
-                where attributes != null && attributes.Length > 0
-                select new { Type = t, Attributes = attributes.Cast<ExternalTaskTopic>() };
+            var externalTaskWorkers = RetrieveExternalTaskWorkerInfo(assembly);
 
-            foreach (var taskWorker in externalTaskWorkers)
+            foreach (var taskWorkerInfo in externalTaskWorkers)
             {
-                var workerTopicName = taskWorker.Attributes.FirstOrDefault().TopicName;
-                var retries = taskWorker.Attributes.FirstOrDefault().Retries;
-                var retryTimeout = taskWorker.Attributes.FirstOrDefault().RetryTimeout;
-
-                string[] variablesToFetch = null;
-                var variableRequirements = taskWorker.Type.GetCustomAttributes(typeof(ExternalTaskVariableRequirements), true)
-                    .FirstOrDefault() as ExternalTaskVariableRequirements;
-                if (variableRequirements != null)
-                {
-                    variablesToFetch = variableRequirements.VariablesToFetch;
-                }
-
-                var constructor = taskWorker.Type.GetConstructor(Type.EmptyTypes);
-                IExternalTaskAdapter adapter = (IExternalTaskAdapter)constructor.Invoke(null);
-
-                // Now register it!
-                Console.WriteLine("Register Task Worker for Topic '" + workerTopicName + "'");
-                ExternalTaskWorker worker = new ExternalTaskWorker(ExternalTaskService(), adapter, workerTopicName, retries, retryTimeout, variablesToFetch);
-                workers.Add(worker);
+                Console.WriteLine($"Register Task Worker for Topic '{taskWorkerInfo.TopicName}'");
+                ExternalTaskWorker worker = new ExternalTaskWorker(ExternalTaskService, taskWorkerInfo);
+                _workers.Add(worker);
                 worker.StartWork();
             }
         }
 
+        private static IEnumerable<Dto.ExternalTaskWorkerInfo> RetrieveExternalTaskWorkerInfo(System.Reflection.Assembly assembly)
+        {
+            // find all classes with CustomAttribute [ExternalTask("name")]
+            var externalTaskWorkers =
+                from t in assembly.GetTypes()
+                let externalTaskTopicAttribute = t.GetCustomAttributes(typeof(ExternalTaskTopicAttribute), true).FirstOrDefault() as ExternalTaskTopicAttribute
+                let externalTaskVariableRequirements = t.GetCustomAttributes(typeof(ExternalTaskVariableRequirementsAttribute), true).FirstOrDefault() as ExternalTaskVariableRequirementsAttribute
+                where externalTaskTopicAttribute != null
+                select new Dto.ExternalTaskWorkerInfo
+                {
+                    Type = t,
+                    TopicName = externalTaskTopicAttribute.TopicName,
+                    Retries = externalTaskTopicAttribute.Retries,
+                    RetryTimeout = externalTaskTopicAttribute.RetryTimeout,
+                    VariablesToFetch = new List<string>(externalTaskVariableRequirements?.VariablesToFetch),
+                    TaskAdapter = t.GetConstructor(Type.EmptyTypes)?.Invoke(null) as IExternalTaskAdapter
+                };
+            return externalTaskWorkers;
+        }
+
         public void StopWorkers()
         {
-            foreach (ExternalTaskWorker worker in workers)
+            foreach (ExternalTaskWorker worker in _workers)
             {
                 worker.StopWork();
             }

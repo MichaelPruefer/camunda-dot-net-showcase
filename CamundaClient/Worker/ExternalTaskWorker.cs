@@ -9,41 +9,33 @@ namespace CamundaClient.Worker
 {
     class ExternalTaskWorker : IDisposable
     {
-        private String workerId = Guid.NewGuid().ToString(); // TODO: Make configurable
-        private String topicName;
-        private String[] variablesToFetch;
-        private IExternalTaskAdapter adapter;
-        private ExternalTaskService service;
+        private string workerId = Guid.NewGuid().ToString(); // TODO: Make configurable
 
         private Timer taskQueryTimer;
         private long pollingIntervalInMilliseconds = 1 * 1000; // every second
         private int maxDegreeOfParallelism = 2;
         private int maxTasksToFetchAtOnce = 10;
         private long lockDurationInMilliseconds = 1 * 60 * 1000; // 1 minute
-        private int retries;
-        private long retryTimeout;
+        private ExternalTaskService externalTaskService;
+        private ExternalTaskWorkerInfo taskWorkerInfo;
 
-        public ExternalTaskWorker(ExternalTaskService service, IExternalTaskAdapter adapter, String topicName, int retries, long retryTimeout, String[] variablesToFetch)
+        public ExternalTaskWorker(ExternalTaskService externalTaskService, ExternalTaskWorkerInfo taskWorkerInfo)
         {
-            this.adapter = adapter;
-            this.topicName = topicName;
-            this.variablesToFetch = variablesToFetch;
-            this.service = service;
-            this.retries = retries;
-            this.retryTimeout = retryTimeout;
+            this.externalTaskService = externalTaskService;
+            this.taskWorkerInfo = taskWorkerInfo;
         }
 
         public void DoPolling()
         {
             // Query External Tasks
             try {
-                IList<ExternalTask> tasks = service.FetchAndLockTasks(workerId, maxTasksToFetchAtOnce, topicName, lockDurationInMilliseconds, new List<string>(variablesToFetch));
+                var tasks = externalTaskService.FetchAndLockTasks(workerId, maxTasksToFetchAtOnce, taskWorkerInfo.TopicName, lockDurationInMilliseconds, new List<string>(taskWorkerInfo.VariablesToFetch));
 
                 // run them in parallel with a max degree of parallelism
                 Parallel.ForEach(
                     tasks,
                     new ParallelOptions { MaxDegreeOfParallelism = this.maxDegreeOfParallelism },
-                    externalTask => { Execute(externalTask); }
+                    externalTask => Execute(externalTask)
                 );
             }
             catch (EngineException ex)
@@ -60,22 +52,22 @@ namespace CamundaClient.Worker
         {
             Dictionary<string, object> resultVariables = new Dictionary<string, object>();
 
-            Console.WriteLine("Execute External Task from topic '" + topicName + "': " + externalTask + "...");
+            Console.WriteLine($"Execute External Task from topic '{taskWorkerInfo.TopicName}': {externalTask}...");
             try
             {
-                adapter.Execute(externalTask, ref resultVariables);
-                Console.WriteLine("...finished External Task " + externalTask.id);
-                service.Complete(workerId, externalTask.id, resultVariables);
+                taskWorkerInfo.TaskAdapter.Execute(externalTask, ref resultVariables);
+                Console.WriteLine($"...finished External Task {externalTask.Id}");
+                externalTaskService.Complete(workerId, externalTask.Id, resultVariables);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("...failed External Task  " + externalTask.id);
-                var retriesLeft = retries; // start with default
-                if (externalTask.retries.HasValue) // or decrement if retries are already set
+                Console.WriteLine($"...failed External Task  {externalTask.Id}");
+                var retriesLeft = taskWorkerInfo.Retries; // start with default
+                if (externalTask.Retries.HasValue) // or decrement if retries are already set
                 {
-                    retriesLeft = externalTask.retries.Value - 1;
+                    retriesLeft = externalTask.Retries.Value - 1;
                 }
-                service.Failure(workerId, externalTask.id, ex.Message, retriesLeft, retryTimeout);
+                externalTaskService.Failure(workerId, externalTask.Id, ex.Message, retriesLeft, taskWorkerInfo.RetryTimeout);
             }
         }
 

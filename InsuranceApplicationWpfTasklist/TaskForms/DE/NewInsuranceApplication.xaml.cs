@@ -31,9 +31,9 @@ namespace InsuranceApplicationWpfTasklist.TaskForms.DE
         private void buttonStartProcessInstance_Click(object sender, RoutedEventArgs e)
         {
             try {
-                Tasklist.Camunda.BpmnWorkflowService().StartProcessInstance(ProcessDefinition.key, Variables);
-                Tasklist.hideDetails();
-                Tasklist.reloadTasks();
+                Tasklist.Camunda.BpmnWorkflowService.StartProcessInstance(ProcessDefinition.Key, Variables);
+                Tasklist.HideDetails();
+                Tasklist.ReloadTasks();
             }
             catch (Exception ex)
             {
