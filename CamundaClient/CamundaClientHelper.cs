@@ -1,9 +1,14 @@
 ﻿using CamundaClient.Dto;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System.Text;
 
 namespace CamundaClient
 {
@@ -58,6 +63,63 @@ namespace CamundaClient
                 };
                 result.Add(variable.Key, camundaVariable);
             }
+            return result;
+        }
+
+
+        public async Task<T> PostAsync<T>(string uri, object content)
+        {
+            var result = default(T);
+            using (var http = HttpClient(uri))
+            {
+                try
+                {
+                    var requestContent = new StringContent(
+                        JsonConvert.SerializeObject(
+                            content,
+                            Formatting.None,
+                            new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
+                        Encoding.UTF8,
+                        CamundaClientHelper.CONTENT_TYPE_JSON
+                    );
+                    var response = await http.PostAsync("", requestContent);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        result = JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+                    }
+                    else
+                    {
+                        throw new EngineException($"Post '{uri}' failed with: {response.ReasonPhrase}");
+                    }
+                }
+                finally
+                {
+                    http.Dispose();
+                }
+            }
+
+            return result;
+        }
+
+        public async Task<T> GetAsync<T>(string uri, params Tuple<string, string>[] queryParams)
+        {
+            var queryParam = String.Join("&", queryParams?.Select(pair => $"{pair.Item1}={pair.Item2}"));
+
+            var result = default(T);
+
+            using (var http = HttpClient(uri + "?" + queryParam))
+            {
+                var response = await http.GetAsync("");
+                if (response.IsSuccessStatusCode)
+                {
+                    result = JsonConvert.DeserializeObject<T>(await response.Content.ReadAsStringAsync());
+                }
+                else
+                {
+                    throw new EngineException($"Get '{uri}' failed with: {response.ReasonPhrase}");
+                }
+            }
+
             return result;
         }
     }

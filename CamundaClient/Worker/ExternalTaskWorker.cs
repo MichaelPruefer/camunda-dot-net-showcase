@@ -25,11 +25,12 @@ namespace CamundaClient.Worker
             this.taskWorkerInfo = taskWorkerInfo;
         }
 
-        public void DoPolling()
+        public async Task DoPolling()
         {
             // Query External Tasks
-            try {
-                var tasks = externalTaskService.FetchAndLockTasks(workerId, maxTasksToFetchAtOnce, taskWorkerInfo.TopicName, lockDurationInMilliseconds, new List<string>(taskWorkerInfo.VariablesToFetch));
+            try
+            {
+                var tasks = await externalTaskService.FetchAndLockTasksAsync(workerId, maxTasksToFetchAtOnce, taskWorkerInfo.TopicName, lockDurationInMilliseconds, new List<string>(taskWorkerInfo.VariablesToFetch));
 
                 // run them in parallel with a max degree of parallelism
                 Parallel.ForEach(
@@ -73,7 +74,7 @@ namespace CamundaClient.Worker
 
         public void StartWork()
         {
-            this.taskQueryTimer = new Timer(_ => DoPolling(), null, pollingIntervalInMilliseconds, Timeout.Infinite);
+            this.taskQueryTimer = new Timer(async _ => await DoPolling(), null, pollingIntervalInMilliseconds, Timeout.Infinite);
         }
 
         public void StopWork()
@@ -83,9 +84,10 @@ namespace CamundaClient.Worker
 
         public void Dispose()
         {
-            if (this.taskQueryTimer !=null)
+            if (this.taskQueryTimer != null)
             {
                 this.taskQueryTimer.Dispose();
+                this.taskQueryTimer = null;
             }
         }
     }
