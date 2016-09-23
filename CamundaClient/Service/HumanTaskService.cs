@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using CamundaClient.Requests;
+using Newtonsoft.Json.Serialization;
 
 namespace CamundaClient.Service
 {
@@ -83,22 +84,27 @@ namespace CamundaClient.Service
 
         public void Complete(string taskId, Dictionary<string, object> variables)
         {
-            var http = helper.HttpClient("task/" + taskId + "/complete");
-
-            var request = new CompleteRequest();
-            request.Variables = CamundaClientHelper.ConvertVariables(variables);
-
-            var requestContent = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, CamundaClientHelper.CONTENT_TYPE_JSON);
-            var response = http.PostAsync("", requestContent).Result;
-            if (!response.IsSuccessStatusCode)
+            using (var http = helper.HttpClient("task/" + taskId + "/complete"))
             {
-                //var errorMsg = response.Content.ReadAsStringAsync();
-                http.Dispose();
-                throw new EngineException(response.ReasonPhrase);
+
+                var request = new CompleteRequest();
+                request.Variables = CamundaClientHelper.ConvertVariables(variables);
+
+                var requestContent = new StringContent(
+                    JsonConvert.SerializeObject(
+                        request,
+                        Formatting.None,
+                        new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
+                    Encoding.UTF8,
+                    CamundaClientHelper.CONTENT_TYPE_JSON
+                );
+                var response = http.PostAsync("", requestContent).Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    //var errorMsg = response.Content.ReadAsStringAsync();
+                    throw new EngineException(response.ReasonPhrase);
+                }
             }
-            http.Dispose();
         }
     }
-
-
 }

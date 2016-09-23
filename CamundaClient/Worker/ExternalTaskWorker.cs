@@ -57,7 +57,7 @@ namespace CamundaClient.Worker
             {
                 taskWorkerInfo.TaskAdapter.Execute(externalTask, ref resultVariables);
                 Console.WriteLine($"...finished External Task {externalTask.Id}");
-                externalTaskService.Complete(workerId, externalTask.Id, resultVariables);
+                externalTaskService.CompleteAsync(workerId, externalTask.Id, resultVariables).Wait();
             }
             catch (Exception ex)
             {
@@ -67,7 +67,7 @@ namespace CamundaClient.Worker
                 {
                     retriesLeft = externalTask.Retries.Value - 1;
                 }
-                externalTaskService.Failure(workerId, externalTask.Id, ex.Message, retriesLeft, taskWorkerInfo.RetryTimeout);
+                externalTaskService.FailureAsync(workerId, externalTask.Id, ex.Message, retriesLeft, taskWorkerInfo.RetryTimeout).Wait();
             }
         }
 
