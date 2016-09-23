@@ -134,7 +134,7 @@ namespace CamundaClient.Service
 
         public async Task<bool> BpmnErrorAsync(string workerId, string externalTaskId, string errorCode)
         {
-            using (var http = helper.HttpClient($"/external-task/{externalTaskId}/bpmnError"))
+            using (var http = helper.HttpClient($"external-task/{externalTaskId}/bpmnError"))
             {
                 var request = new
                 {
