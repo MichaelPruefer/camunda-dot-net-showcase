@@ -101,9 +101,9 @@ namespace CamundaClient
             return result;
         }
 
-        public async Task<T> GetAsync<T>(string uri, params Tuple<string, string>[] queryParams)
+        public async Task<T> GetAsync<T>(string uri, IDictionary<string, string> queryParams)
         {
-            var queryParam = String.Join("&", queryParams?.Select(pair => $"{pair.Item1}={pair.Item2}"));
+            var queryParam = String.Join("&", queryParams?.Select(pair => $"{pair.Key}={pair.Value}"));
 
             var result = default(T);
 

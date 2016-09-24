@@ -94,42 +94,41 @@ namespace CamundaClient.Service
 
         public async Task<IEnumerable<ExternalTask>> FetchTaskListAsync(string workerId, string topicName, int maxResults)
         {
-            var queryParams = new List<Tuple<string, string>>();
+            var queryParams = new Dictionary<string, string>();
             if (!String.IsNullOrEmpty(workerId))
             {
-                queryParams.Add(new Tuple<string, string>("workerId", workerId));
+                queryParams.Add("workerId", workerId);
             }
 
             if (!String.IsNullOrEmpty(topicName))
             {
-                queryParams.Add(new Tuple<string, string>("topicName", topicName));
+                queryParams.Add("topicName", topicName);
             }
 
             if (maxResults > 0)
             {
-                queryParams.Add(new Tuple<string, string>("maxResult", maxResults.ToString()));
+                queryParams.Add("maxResult", maxResults.ToString());
             }
 
-            var result = await helper.GetAsync<IEnumerable<ExternalTask>>($"{ExternalTaskService.EXTERNAL_TASK_URI}", queryParams.ToArray());
+            var result = await helper.GetAsync<IEnumerable<ExternalTask>>($"{ExternalTaskService.EXTERNAL_TASK_URI}", queryParams);
 
             return result;
         }
 
         public async Task<int> CountTasksAsync(string workerId, string topicName)
         {
-            var queryParams = new List<Tuple<string, string>>();
-
+            var queryParams = new Dictionary<string, string>();
             if (!String.IsNullOrEmpty(workerId))
             {
-                queryParams.Add(new Tuple<string, string>("workerId", workerId));
+                queryParams.Add("workerId", workerId);
             }
 
             if (!String.IsNullOrEmpty(topicName))
             {
-                queryParams.Add(new Tuple<string, string>("topicName", topicName));
+                queryParams.Add("topicName", topicName);
             }
 
-            var result = await helper.GetAsync<CountResponse>($"{ExternalTaskService.EXTERNAL_TASK_URI}/count", queryParams.ToArray());
+            var result = await helper.GetAsync<CountResponse>($"{ExternalTaskService.EXTERNAL_TASK_URI}/count", queryParams);
 
             return result?.Count ?? -1;
         }
