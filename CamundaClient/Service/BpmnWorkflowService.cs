@@ -6,6 +6,7 @@ using System.Net.Http;
 using CamundaClient.Requests;
 using System.Text;
 using Newtonsoft.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace CamundaClient.Service
 {
@@ -23,62 +24,62 @@ namespace CamundaClient.Service
 
         public string StartProcessInstance(string processDefinitionKey, string businessKey, Dictionary<string, object> variables)
         {
-            var http = helper.HttpClient("process-definition/key/" + processDefinitionKey + "/start");
-
-            var request = new CompleteRequest();
-            request.Variables = CamundaClientHelper.ConvertVariables(variables);
-            request.BusinessKey = businessKey;
-
-            var requestContent = new StringContent(
-                JsonConvert.SerializeObject(
-                    request,
-                    Formatting.None,
-                    new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
-                Encoding.UTF8,
-                CamundaClientHelper.CONTENT_TYPE_JSON
-            );
-            var response = http.PostAsync("", requestContent).Result;
-            if (response.IsSuccessStatusCode)
+            using (var http = helper.HttpClient($"process-definition/key/{processDefinitionKey}/start"))
             {
-                var processInstance = JsonConvert.DeserializeObject<ProcessInstance>(response.Content.ReadAsStringAsync().Result);
 
-                http.Dispose();
-                return processInstance.Id;
-            }
-            else
-            {
-                //var errorMsg = response.Content.ReadAsStringAsync();
-                http.Dispose();
-                throw new EngineException(response.ReasonPhrase);
-            }
+                var request = new CompleteRequest
+                {
+                    Variables = CamundaClientHelper.ConvertVariables(variables),
+                    BusinessKey = businessKey
+                };
 
+                var requestContent = new StringContent(
+                    JsonConvert.SerializeObject(
+                        request,
+                        Formatting.None,
+                        new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
+                    Encoding.UTF8,
+                    CamundaClientHelper.CONTENT_TYPE_JSON
+                );
+                var response = http.PostAsync("", requestContent).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var processInstance = JsonConvert.DeserializeObject<ProcessInstance>(response.Content.ReadAsStringAsync().Result);
+
+                    return processInstance.Id;
+                }
+                else
+                {
+                    //var errorMsg = response.Content.ReadAsStringAsync();
+                    throw new EngineException(response.ReasonPhrase);
+                }
+            }
         }
 
-        public Dictionary<string, object> LoadVariables(string taskId)
+        public async Task<IDictionary<string, object>> LoadVariablesAsync(string taskId)
         {
-            var http = helper.HttpClient("task/" + taskId + "/variables");
-
-            var response = http.GetAsync("").Result;
-            if (response.IsSuccessStatusCode)
+            using (var http = helper.HttpClient($"task/{taskId}/variables"))
             {
-                // Successful - parse the response body
-                var variableResponse = JsonConvert.DeserializeObject< Dictionary<string, Variable>>(response.Content.ReadAsStringAsync().Result);
 
-                var variables = new Dictionary<string, object>();
-                foreach (var variable in variableResponse)
+                var response = http.GetAsync("").Result;
+                if (response.IsSuccessStatusCode)
                 {
-                    variables.Add(variable.Key, variable.Value.Value);
+                    // Successful - parse the response body
+                    var variableResponse = JsonConvert.DeserializeObject<Dictionary<string, Variable>>(await response.Content.ReadAsStringAsync());
+
+                    var variables = new Dictionary<string, object>();
+                    foreach (var variable in variableResponse)
+                    {
+                        variables.Add(variable.Key, variable.Value.Value);
+                    }
+
+                    return variables;
                 }
-                http.Dispose();
-                return variables;
-            }
-            else
-            {
-                http.Dispose();
-                throw new EngineException("Could not load variable: " + response.ReasonPhrase);
+                else
+                {
+                    throw new EngineException("Could not load variable: " + response.ReasonPhrase);
+                }
             }
         }
     }
-
-
 }

@@ -34,7 +34,7 @@ namespace CamundaClient
         public void Startup()
         {
             this.StartWorkers();
-            this.RepositoryService.AutoDeploy();
+            this.RepositoryService.AutoDeployAsync().Wait();
         }
 
         public void Shutdown()

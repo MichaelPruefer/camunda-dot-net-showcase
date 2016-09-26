@@ -66,7 +66,6 @@ namespace CamundaClient
             return result;
         }
 
-
         public async Task<T> PostAsync<T>(string uri, object content)
         {
             var result = default(T);
@@ -101,13 +100,40 @@ namespace CamundaClient
             return result;
         }
 
+        public async Task PostAsync(string uri, object content)
+        {
+            using (var http = HttpClient(uri))
+            {
+                try
+                {
+                    var requestContent = new StringContent(
+                        JsonConvert.SerializeObject(
+                            content,
+                            Formatting.None,
+                            new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
+                        Encoding.UTF8,
+                        CamundaClientHelper.CONTENT_TYPE_JSON
+                    );
+                    var response = await http.PostAsync("", requestContent);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new EngineException($"Post '{uri}' failed with: {response.ReasonPhrase}");
+                    }
+                }
+                finally
+                {
+                    http.Dispose();
+                }
+            }
+        }
+
         public async Task<T> GetAsync<T>(string uri, IDictionary<string, string> queryParams)
         {
-            var queryParam = String.Join("&", queryParams?.Select(pair => $"{pair.Key}={pair.Value}"));
+            string queryParam = BuildQueryString(queryParams);
 
             var result = default(T);
 
-            using (var http = HttpClient(uri + "?" + queryParam))
+            using (var http = HttpClient(uri + queryParam))
             {
                 var response = await http.GetAsync("");
                 if (response.IsSuccessStatusCode)
@@ -121,6 +147,32 @@ namespace CamundaClient
             }
 
             return result;
+        }
+
+        public async Task GetAsync(string uri, IDictionary<string, string> queryParams)
+        {
+            string queryParam = BuildQueryString(queryParams);
+
+            using (var http = HttpClient(uri + queryParam))
+            {
+                var response = await http.GetAsync("");
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new EngineException($"Get '{uri}' failed with: {response.ReasonPhrase}");
+                }
+            }
+        }
+
+        private static string BuildQueryString(IDictionary<string, string> queryParams)
+        {
+            var queryParam = String.Join("&", queryParams?.Select(pair => $"{pair.Key}={pair.Value}") ?? new string[] { });
+
+            if (!string.IsNullOrEmpty(queryParam))
+            {
+                queryParam = "?" + queryParam;
+            }
+
+            return queryParam;
         }
     }
 }

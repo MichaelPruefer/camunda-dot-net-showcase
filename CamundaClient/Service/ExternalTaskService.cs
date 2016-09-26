@@ -44,7 +44,7 @@ namespace CamundaClient.Service
              return await helper.PostAsync<IList<ExternalTask>>($"{ExternalTaskService.EXTERNAL_TASK_URI}/fetchAndLock", fetchAndLockRequest);
         }
 
-        public async Task<bool> CompleteAsync(string workerId, string externalTaskId, Dictionary<string, object> variablesToPassToProcess)
+        public async Task CompleteAsync(string workerId, string externalTaskId, Dictionary<string, object> variablesToPassToProcess)
         {
             var request = new CompleteRequest
             {
@@ -52,12 +52,10 @@ namespace CamundaClient.Service
                 Variables = CamundaClientHelper.ConvertVariables(variablesToPassToProcess)
             };
 
-            var result = await helper.PostAsync<object>($"{ExternalTaskService.EXTERNAL_TASK_URI}/{externalTaskId}/complete", request);
-            
-            return true;
+            await helper.PostAsync($"{ExternalTaskService.EXTERNAL_TASK_URI}/{externalTaskId}/complete", request);
         }
 
-        public async Task<bool> FailureAsync(string workerId, string externalTaskId, string errorMessage, int retries, long retryTimeout)
+        public async Task FailureAsync(string workerId, string externalTaskId, string errorMessage, int retries, long retryTimeout)
         {
             var request = new FailureRequest
             {
@@ -67,12 +65,10 @@ namespace CamundaClient.Service
                 RetryTimeout = retryTimeout
             };
 
-            var result = await helper.PostAsync<object>($"{ExternalTaskService.EXTERNAL_TASK_URI}/{externalTaskId}/failure", request);
-
-            return true;
+            await helper.PostAsync($"{ExternalTaskService.EXTERNAL_TASK_URI}/{externalTaskId}/failure", request);
         }
 
-        public async Task<bool> BpmnErrorAsync(string workerId, string externalTaskId, string errorCode)
+        public async Task BpmnErrorAsync(string workerId, string externalTaskId, string errorCode)
         {
             var request = new
             {
@@ -80,9 +76,7 @@ namespace CamundaClient.Service
                 ErrorCode = errorCode
             };
 
-            var result = await helper.PostAsync<object>($"{ExternalTaskService.EXTERNAL_TASK_URI}/{externalTaskId}/bpmnError", request);
-
-            return true;
+            await helper.PostAsync($"{ExternalTaskService.EXTERNAL_TASK_URI}/{externalTaskId}/bpmnError", request);
         }
 
         public async Task<ExternalTask> FetchTaskAsync(string externalTaskId)

@@ -56,44 +56,36 @@ namespace CamundaClient.Service
             return variables;
         }
 
-        public async Task<bool> CompleteAsync(string taskId, Dictionary<string, object> variables)
+        public async Task CompleteAsync(string taskId, Dictionary<string, object> variables)
         {
             var request = new CompleteRequest
             {
                 Variables = CamundaClientHelper.ConvertVariables(variables)
             };
-            var result = await helper.PostAsync<bool>($"task/{taskId}/complete", request);
-
-            return true;
+            await helper.PostAsync($"task/{taskId}/complete", request);
         }
 
-        public async Task<bool> ResolveAsync(string taskId, Dictionary<string, object> variables)
+        public async Task ResolveAsync(string taskId, Dictionary<string, object> variables)
         {
             var request = new CompleteRequest
             {
                 Variables = CamundaClientHelper.ConvertVariables(variables)
             };
-            var result = await helper.PostAsync<bool>($"task/{taskId}/resolve", request);
-
-            return true;
+            await helper.PostAsync($"task/{taskId}/resolve", request);
         }
 
-        public async Task<bool> ClaimAsync(string taskId, string userId)
+        public async Task ClaimAsync(string taskId, string userId)
         {
             var request = new
             {
                 UserId = userId
             };
-            var result = await helper.PostAsync<bool>($"task/{taskId}/claim", request);
-
-            return true;
+            await helper.PostAsync($"task/{taskId}/claim", request);
         }
 
-        public async Task<bool> UnclaimAsync(string taskId)
+        public async Task UnclaimAsync(string taskId)
         {
-            var result = await helper.PostAsync<bool>($"task/{taskId}/unclaim", null);
-
-            return true;
+            await helper.PostAsync($"task/{taskId}/unclaim", null);
         }
     }
 }

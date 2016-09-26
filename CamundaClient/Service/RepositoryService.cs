@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using CamundaClient.Requests;
+using System.Threading.Tasks;
 
 namespace CamundaClient.Service
 {
@@ -23,78 +24,81 @@ namespace CamundaClient.Service
         }
 
 
-        public List<ProcessDefinition> LoadProcessDefinitions(bool onlyLatest)
+        public async Task<IEnumerable<ProcessDefinition>> LoadProcessDefinitionsAsync(bool onlyLatest)
         {
-            var http = helper.HttpClient("process-definition/");
-            HttpResponseMessage response = http.GetAsync("?latestVersion=" + (onlyLatest ? "true" : "false")).Result;
-            if (response.IsSuccessStatusCode)
+            IEnumerable<ProcessDefinition> result = null;
+            using (var http = helper.HttpClient("process-definition/"))
             {
-                var result = JsonConvert.DeserializeObject<IEnumerable<ProcessDefinition>>(response.Content.ReadAsStringAsync().Result);
-                http.Dispose();
-
-                // Could be extracted into separate method call if you run a lot of process definitions and want to optimize performance
-                foreach (ProcessDefinition pd in result)
+                var response = await http.GetAsync("?latestVersion=" + (onlyLatest ? "true" : "false"));
+                if (response.IsSuccessStatusCode)
                 {
-                    http = helper.HttpClient("process-definition/" + pd.Id + "/startForm");
-                    HttpResponseMessage response2 = http.GetAsync("").Result;
-                    var startForm = JsonConvert.DeserializeObject<StartForm>(response2.Content.ReadAsStringAsync().Result);
+                    result = JsonConvert.DeserializeObject<IEnumerable<ProcessDefinition>>(await response.Content.ReadAsStringAsync());
+                }
+                else
+                {
+                    return new List<ProcessDefinition>();
+                }
+            }
+
+            // Could be extracted into separate method call if you run a lot of process definitions and want to optimize performance
+            foreach (ProcessDefinition pd in result)
+            {
+                using (var http = helper.HttpClient($"process-definition/{pd.Id}/startForm"))
+                {
+                    var response = await http.GetAsync("");
+                    var startForm = JsonConvert.DeserializeObject<StartForm>(await response.Content.ReadAsStringAsync());
 
                     pd.StartFormKey = startForm.Key;
-                    http.Dispose();
                 }
-                return new List<ProcessDefinition>(result);
             }
-            else
-            {
-                http.Dispose();
-                return new List<ProcessDefinition>();
-            }
+            return new List<ProcessDefinition>(result);
 
         }
 
-        public void DeleteDeployment(string deploymentId)
+        public async Task DeleteDeploymentAsync(string deploymentId)
         {
-            HttpClient http = helper.HttpClient("deployment/" + deploymentId + "?cascade=true");
-            HttpResponseMessage response = http.DeleteAsync("").Result;
-            if (!response.IsSuccessStatusCode)
+            using (var http = helper.HttpClient($"deployment/{deploymentId}?cascade=true"))
             {
-                var errorMsg = response.Content.ReadAsStringAsync();
-                http.Dispose();
-                throw new EngineException(response.ReasonPhrase);
+                var response = await http.DeleteAsync("");
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorMsg = await response.Content.ReadAsStringAsync();
+                    throw new EngineException($"{response.ReasonPhrase}: {errorMsg}");
+                }
             }
-            http.Dispose();
         }
 
-        public string Deploy(string deploymentName, List<object> files)
+        public async Task<string> DeployAsync(string deploymentName, List<object> files)
         {
-            Dictionary<string, object> postParameters = new Dictionary<string, object>();
-            postParameters.Add("deployment-name", deploymentName);
-            postParameters.Add("deployment-source", "C# Process Application");
-            postParameters.Add("enable-duplicate-filtering", "true");
-            postParameters.Add("data", files);
+            var postParameters = new Dictionary<string, object> {
+                { "deployment-name", deploymentName },
+                { "deployment-source", "C# Process Application" },
+                { "enable-duplicate-filtering", "true" },
+                { "data", files }
+            };
 
             // Create request and receive response
-            string postURL = helper.RestUrl + "deployment/create";
-            HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(postURL, helper.RestUsername, helper.RestPassword, postParameters);
+            var postURL = helper.RestUrl + "deployment/create";
+            var webResponse = FormUpload.MultipartFormDataPost(postURL, helper.RestUsername, helper.RestPassword, postParameters);
 
             using (var reader = new StreamReader(webResponse.GetResponseStream(), Encoding.UTF8))
             {
-                var deployment = JsonConvert.DeserializeObject<Deployment>(reader.ReadToEnd());
+                var deployment = JsonConvert.DeserializeObject<Deployment>(await reader.ReadToEndAsync());
                 return deployment.Id;
             }
         }
 
-        public void AutoDeploy()
+        public async Task AutoDeployAsync()
         {
-            Assembly thisExe = Assembly.GetEntryAssembly();
-            string[] resources = thisExe.GetManifestResourceNames();
+            var thisExe = Assembly.GetEntryAssembly();
+            var resources = thisExe.GetManifestResourceNames();
 
             if (resources.Length == 0)
             {
                 return;
             }
 
-            List<object> files = new List<object>();
+            var files = new List<object>();
             foreach (string resource in resources)
             {
                 // TODO Check if Camunda relevant (BPMN, DMN, HTML Forms)
@@ -105,7 +109,7 @@ namespace CamundaClient.Service
                 Console.WriteLine("Adding resource to deployment: " + resource);
             }
 
-            Deploy(thisExe.GetName().Name, files);
+            await DeployAsync(thisExe.GetName().Name, files);
 
             Console.WriteLine("Deployment to Camunda BPM succeeded.");
 
