@@ -40,7 +40,7 @@ namespace InsuranceApplicationWpfTasklist
 
         private void LoadProcessDefinitions()
         {
-            var processDefinitions = Camunda.RepositoryService.LoadProcessDefinitions(true);
+            var processDefinitions = Camunda.RepositoryService.LoadProcessDefinitionsAsync(true).Result;
             processDefinitionListBox.Items.Clear();
             processDefinitionListBox.ItemsSource = processDefinitions.OrderBy(pd => pd.Name).ToList(); // add them sorted by name
             processDefinitionListBox.SelectedIndex = 0;
@@ -50,7 +50,7 @@ namespace InsuranceApplicationWpfTasklist
 
         public void ReloadTasks()
         {
-            var tasks = Camunda.HumanTaskService.LoadTasks();
+            var tasks = Camunda.HumanTaskService.LoadTasksAsync().Result;
             taskListView.ItemsSource = tasks.OrderByDescending(task => task.Created).ToList(); // add them ordered by creation date
             /*
             Assembly thisExe = Assembly.GetEntryAssembly();

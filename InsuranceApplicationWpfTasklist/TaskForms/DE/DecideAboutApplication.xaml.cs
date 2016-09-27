@@ -26,7 +26,7 @@ namespace InsuranceApplicationWpfTasklist.TaskForms.DE
         {
             this.Tasklist = tasklist;
             this.Task = task;
-            TaskVariables = Tasklist.Camunda.HumanTaskService.LoadVariables(task.Id);
+            TaskVariables = Tasklist.Camunda.HumanTaskService.LoadVariablesAsync(task.Id).Result;
             NewVariables = new Dictionary<string, object>();
             NewVariables.Add("approved", false);
         }
@@ -34,7 +34,7 @@ namespace InsuranceApplicationWpfTasklist.TaskForms.DE
         private void buttonCompleteTaskl_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             try {
-                Tasklist.Camunda.HumanTaskService.Complete(Task.Id, NewVariables);
+                Tasklist.Camunda.HumanTaskService.CompleteAsync(Task.Id, NewVariables).Wait();
             }
             catch (Exception ex)
             {

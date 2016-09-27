@@ -19,8 +19,8 @@ namespace SimpleCalculationProcess
             var camunda = new CamundaEngineClient(new System.Uri("http://localhost:8080/engine-rest/engine/default/"), null, null);
 
             // Deploy the process under test
-            string deploymentId = camunda.RepositoryService.Deploy("testcase", new List<object> {
-                FileParameter.FromManifestResource(Assembly.GetExecutingAssembly(), "SimpleCalculationProcess.calculation.bpmn") });
+            string deploymentId = camunda.RepositoryService.DeployAsync("testcase", new List<object> {
+                FileParameter.FromManifestResource(Assembly.GetExecutingAssembly(), "SimpleCalculationProcess.calculation.bpmn") }).Result;
 
             string processInstanceId = camunda.BpmnWorkflowService.StartProcessInstance("calculate", new Dictionary<string, object>()
             {
@@ -28,24 +28,24 @@ namespace SimpleCalculationProcess
                 {"y", 10 }
             });
 
-            var externalTasks = camunda.ExternalTaskService.FetchAndLockTasks("testcase", 100, "calculate", 1000, new List<string>() { "x", "y" });
-            Assert.AreEqual(1, externalTasks.Count);
+            var externalTasks = camunda.ExternalTaskService.FetchAndLockTasksAsync("testcase", 100, "calculate", 1000, new List<string>() { "x", "y" }).Result;
+            Assert.AreEqual(1, externalTasks.Count());
             Assert.AreEqual("ServiceTaskCalculate", externalTasks.First().ActivityId);
 
-            camunda.ExternalTaskService.Complete("testcase", externalTasks.First().Id, new Dictionary<string, object>() { { "result", 15 } });
+            camunda.ExternalTaskService.CompleteAsync("testcase", externalTasks.First().Id, new Dictionary<string, object>() { { "result", 15 } }).Wait();
 
-            var tasks = camunda.HumanTaskService.LoadTasks(new Dictionary<string, string>() {
+            var tasks = camunda.HumanTaskService.LoadTasksAsync(new Dictionary<string, string>() {
                 { "processInstanceId", processInstanceId }
-            });
-            Assert.AreEqual(1, tasks.Count);
+            }).Result;
+            Assert.AreEqual(1, tasks.Count());
             Assert.AreEqual("UserTaskReviewResult", tasks.First().TaskDefinitionKey);
 
-            camunda.HumanTaskService.Complete(tasks.First().Id, new Dictionary<string, object>());
+            camunda.HumanTaskService.CompleteAsync(tasks.First().Id, new Dictionary<string, object>()).Wait();
 
             // not the process instance has ended, TODO: Check state with History
 
             // cleanup after test case
-            camunda.RepositoryService.DeleteDeployment(deploymentId);
+            camunda.RepositoryService.DeleteDeploymentAsync(deploymentId).Wait();
         }
     }
 }
