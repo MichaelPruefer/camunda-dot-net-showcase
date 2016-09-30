@@ -31,6 +31,10 @@ namespace CamundaClient
 
         public ExternalTaskService ExternalTaskService => new ExternalTaskService(_camundaClientHelper);
 
+        public ProcessService ProcessService => new ProcessService(_camundaClientHelper);
+
+        public HistoryService HistoryService => new HistoryService(_camundaClientHelper); 
+
         public void Startup()
         {
             this.StartWorkers();
