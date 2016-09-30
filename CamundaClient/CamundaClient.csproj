@@ -70,6 +70,8 @@
     <Compile Include="Requests\FailureRequest.cs" />
     <Compile Include="Requests\FetchAndLockRequest.cs" />
     <Compile Include="Requests\FormUpload.cs" />
+    <Compile Include="Service\HistoryService.cs" />
+    <Compile Include="Service\ProcessService.cs" />
     <Compile Include="Worker\ExternalTaskVariableRequirementsAttribute.cs" />
     <Compile Include="Worker\ExternalTaskWorker.cs" />
     <Compile Include="Worker\ExternalTaskTopicAttribute.cs" />

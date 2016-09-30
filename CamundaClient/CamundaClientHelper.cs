@@ -163,6 +163,18 @@ namespace CamundaClient
             }
         }
 
+        public async Task DeleteAsync(string uri)
+        {
+            using (var http = HttpClient(uri))
+            {
+                var response = await http.DeleteAsync("");
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new EngineException($"Delete '{uri} failed with: {response.ReasonPhrase}");
+                }
+            }
+        }
+
         private static string BuildQueryString(IDictionary<string, string> queryParams)
         {
             var queryParam = String.Join("&", queryParams?.Select(pair => $"{pair.Key}={pair.Value}") ?? new string[] { });

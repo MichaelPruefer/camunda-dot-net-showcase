@@ -1,12 +1,8 @@
 ﻿using CamundaClient.Dto;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
 using CamundaClient.Requests;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Serialization;
 
 namespace CamundaClient.Service
 {
