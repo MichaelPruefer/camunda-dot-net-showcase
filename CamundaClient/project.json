@@ -1,45 +1,47 @@
 ﻿{
-    "version": "1.0.0-*",
-    "description": "Camunda Client",
-    "name": "CamundaClient",
-    "dependencies": {
-        "NETStandard.Library": "1.6.0"
+  "version": "1.0.0-*",
+  "description": "Camunda Client",
+  "name": "CamundaClient",
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "Newtonsoft.Json": "9.0.1",
+    "System.Net.Http": "4.1.0"
+  },
+  "frameworks": {
+    "net46": {
+      "dependencies": {
+        "Newtonsoft.Json": "9.0.1"
+      },
+      "frameworkAssemblies": {
+        "System.Net.Http": "4.0.0.0",
+        "System.Runtime": ""
+      }
     },
-    "frameworks": {
-        "net46": {
-            "dependencies": {
-                "Newtonsoft.Json": "9.0.1"
-            },
-            "frameworkAssemblies": {
-                "System.Net.Http": "4.0.0.0",
-                "System.Runtime": ""
-            }
-        },
-        "netstandard1.6": {
-            "imports": [
-                "dnxcore56"
-            ],
-            "dependencies": {
-                "Newtonsoft.Json": "9.0.1",
-                "System.Runtime": "4.1.0",
-                "System.Runtime.Serialization.Primitives": "4.1.1",
-                "System.Collections": "4.0.11",
-                "System.Net.Http": "4.1.0",
-                "System.Net.Requests": "4.0.11",
-                "System.Reflection.Extensions": "4.0.1",
-                "System.Linq": "4.1.0",
-                "System.Threading.Tasks": "4.0.11",
-                "System.Threading.Tasks.Parallel": "4.0.1",
-                "System.Threading.Timer": "4.0.1"
-            },
-            "buildOptions": {},
-            "compilationOptions": {}
-        }
-    },
-    "runtimes": {
-        "win": "anycpu"
-    },
-    "buildOptions": {
-        "outputName": "CamundaClient"
+    "netstandard1.6": {
+      "imports": [
+        "dnxcore56"
+      ],
+      "dependencies": {
+        "Newtonsoft.Json": "9.0.1",
+        "System.Runtime": "4.1.0",
+        "System.Runtime.Serialization.Primitives": "4.1.1",
+        "System.Collections": "4.0.11",
+        "System.Net.Http": "4.1.0",
+        "System.Net.Requests": "4.0.11",
+        "System.Reflection.Extensions": "4.0.1",
+        "System.Linq": "4.1.0",
+        "System.Threading.Tasks": "4.0.11",
+        "System.Threading.Tasks.Parallel": "4.0.1",
+        "System.Threading.Timer": "4.0.1"
+      },
+      "buildOptions": {},
+      "compilationOptions": {}
     }
+  },
+  "runtimes": {
+    "win": "anycpu"
+  },
+  "buildOptions": {
+    "outputName": "CamundaClient"
+  }
 }

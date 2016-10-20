@@ -57,9 +57,12 @@
   <ItemGroup>
     <Compile Include="CamundaClientExtensions.cs" />
     <Compile Include="CamundaClientHelper.cs" />
+    <Compile Include="Dto\CountResponse.cs" />
     <Compile Include="Dto\ExternalTaskWorkerInfo.cs" />
     <Compile Include="Dto\FetchAndLockTopic.cs" />
     <Compile Include="Dto\FileParameter.cs" />
+    <Compile Include="Dto\ProcessActivityInstanceResponse.cs" />
+    <Compile Include="Dto\ProcessInstanceResponse.cs" />
     <Compile Include="Dto\StartForm.cs" />
     <Compile Include="Dto\Deployment.cs" />
     <Compile Include="EngineException.cs" />

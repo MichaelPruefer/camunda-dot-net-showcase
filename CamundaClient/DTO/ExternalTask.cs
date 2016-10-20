@@ -12,6 +12,7 @@ namespace CamundaClient.Dto
         public string TopicName { get; set; }
         public string WorkerId { get; set; }
         public int? Priority { get; set; }
+        public string ProcessInstanceId { get; set; }
 
         public override string ToString() => $"ExternalTask [Id={Id}, ActivityId={ActivityId}]";
     }
