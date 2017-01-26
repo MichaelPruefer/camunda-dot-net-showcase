@@ -63,6 +63,7 @@
     <Compile Include="Dto\FileParameter.cs" />
     <Compile Include="Dto\ProcessActivityInstanceResponse.cs" />
     <Compile Include="Dto\ProcessInstanceResponse.cs" />
+    <Compile Include="Dto\ProcessDefinitionXml.cs" />
     <Compile Include="Dto\StartForm.cs" />
     <Compile Include="Dto\Deployment.cs" />
     <Compile Include="EngineException.cs" />

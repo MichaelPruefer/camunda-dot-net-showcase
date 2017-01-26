@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using CamundaClient.Requests;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Serialization;
 
 namespace CamundaClient.Service
 {

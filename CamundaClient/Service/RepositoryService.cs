@@ -51,7 +51,22 @@ namespace CamundaClient.Service
             return new List<ProcessDefinition>(result);
 
         }
-
+        public async Task<string> LoadProcessDefinitionXmlAsync(String processDefinitionId)
+        {
+            using (var http = helper.HttpClient("process-definition/" + processDefinitionId + "/xml"))
+            {
+                var response = await http.GetAsync("");
+                if (response.IsSuccessStatusCode)
+                {
+                    ProcessDefinitionXml processDefinitionXml = JsonConvert.DeserializeObject<ProcessDefinitionXml>(response.Content.ReadAsStringAsync().Result);
+                    return processDefinitionXml.Bpmn20Xml;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
         public async Task DeleteDeploymentAsync(string deploymentId)
         {
             using (var http = helper.HttpClient($"deployment/{deploymentId}?cascade=true"))

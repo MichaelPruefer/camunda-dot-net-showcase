@@ -45,7 +45,7 @@ namespace InsuranceApplicationWpfTasklist
             processDefinitionListBox.ItemsSource = processDefinitions.OrderBy(pd => pd.Name).ToList(); // add them sorted by name
             processDefinitionListBox.SelectedIndex = 0;
 
-            processDefinitionListBox.DisplayMemberPath = "name";
+            processDefinitionListBox.DisplayMemberPath = "Name";
         }
 
         public void ReloadTasks()

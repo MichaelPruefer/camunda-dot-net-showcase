@@ -180,9 +180,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Tasklist\diagram.html" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\start.png" />
   </ItemGroup>
   <ItemGroup>
