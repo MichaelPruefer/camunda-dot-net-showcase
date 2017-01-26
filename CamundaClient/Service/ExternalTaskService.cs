@@ -82,6 +82,11 @@ namespace CamundaClient.Service
             return result;
         }
 
+        public async Task SetRetriesAsync(string externalTaskId, int retries)
+        {
+            await helper.PutAsync($"{ExternalTaskService.EXTERNAL_TASK_URI}/{externalTaskId}/retries", new { Retries = retries });
+        }
+
         public async Task<IEnumerable<ExternalTask>> FetchTaskListAsync(string workerId, string topicName, int maxResults)
         {
             var queryParams = new Dictionary<string, string>();
@@ -103,6 +108,11 @@ namespace CamundaClient.Service
             var result = await helper.GetAsync<IEnumerable<ExternalTask>>($"{ExternalTaskService.EXTERNAL_TASK_URI}", queryParams);
 
             return result;
+        }
+
+        public async Task<IEnumerable<ExternalTask>> ListAsync(string rawFilter)
+        {
+            return await helper.GetAsync<IEnumerable<ExternalTask>>($"{ExternalTaskService.EXTERNAL_TASK_URI}?{rawFilter}", null);
         }
 
         public async Task<int> CountTasksAsync(string workerId, string topicName)

@@ -100,29 +100,42 @@ namespace CamundaClient
             return result;
         }
 
+        internal async Task PutAsync(string uri, object content)
+        {
+            using (var http = HttpClient(uri))
+            {
+                var requestContent = new StringContent(
+                    JsonConvert.SerializeObject(
+                        content,
+                        Formatting.None,
+                        new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
+                    Encoding.UTF8,
+                    CamundaClientHelper.CONTENT_TYPE_JSON
+                );
+                var response = await http.PutAsync("", requestContent);
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new EngineException($"Put '{uri}' failed with: {response.ReasonPhrase}");
+                }
+            }
+        }
+
         public async Task PostAsync(string uri, object content)
         {
             using (var http = HttpClient(uri))
             {
-                try
+                var requestContent = new StringContent(
+                    JsonConvert.SerializeObject(
+                        content,
+                        Formatting.None,
+                        new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
+                    Encoding.UTF8,
+                    CamundaClientHelper.CONTENT_TYPE_JSON
+                );
+                var response = await http.PostAsync("", requestContent);
+                if (!response.IsSuccessStatusCode)
                 {
-                    var requestContent = new StringContent(
-                        JsonConvert.SerializeObject(
-                            content,
-                            Formatting.None,
-                            new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }),
-                        Encoding.UTF8,
-                        CamundaClientHelper.CONTENT_TYPE_JSON
-                    );
-                    var response = await http.PostAsync("", requestContent);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        throw new EngineException($"Post '{uri}' failed with: {response.ReasonPhrase}");
-                    }
-                }
-                finally
-                {
-                    http.Dispose();
+                    throw new EngineException($"Post '{uri}' failed with: {response.ReasonPhrase}");
                 }
             }
         }

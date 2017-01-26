@@ -74,5 +74,10 @@ namespace CamundaClient.Service
             await helper.PostAsync($"{PROCESS_INSTANCE_URI}/{processInsanceId}/modification", content);
 
         }
+
+        public async Task ModificationAsync(string processInstanceId, object body)
+        {
+            await helper.PostAsync($"{PROCESS_INSTANCE_URI}/{processInstanceId}/modification", body);
+        }
     }
 }
