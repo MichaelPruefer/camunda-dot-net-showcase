@@ -1,0 +1,57 @@
+
+<p>
+  Bitte gib alle notwendigen Daten ein, damit dein Chef fundiert aber willk&uuml;rlich entscheiden kann.
+</p>
+
+<form class="form-horizontal">
+    <div class="control-group">
+        <label class="control-label">Name</label>
+        <div class="controls">
+            <input type="text"
+                   cam-variable-name="name"
+                   cam-variable-type="String"
+                   required
+                   class="form-control" />
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Startdatum</label>
+        <div class="controls">
+            <p class="input-group">
+                <input type="text"
+                       cam-variable-name="vacationStartDate"
+                       cam-variable-type="Date"
+                       class="form-control"
+                       datepicker-popup="yyyy-MM-dd'T'HH:mm:ss"
+                       is-open="dateFieldOpened" />
+
+                <span class="input-group-btn">
+                    <button type="button"
+                            class="btn btn-default"
+                            ng-click="open($event)">
+                        <i class="glyphicon glyphicon-calendar"></i>
+                    </button>
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label">Dauer (in Tagen)</label>
+        <div class="controls">
+            <input type="text"
+                   cam-variable-name="duration"
+                   cam-variable-type="Integer"
+                   required
+                   class="form-control" />
+        </div>
+    </div>
+
+    <script cam-script type="text/form-script">
+        $scope.open = function($event) {
+          $event.preventDefault();
+          $event.stopPropagation();
+          $scope.dateFieldOpened = true;
+        };
+    </script>
+</form>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="1.6.0">
+  <bpmn:process id="Urlaubsantrag" name="Urlaubsantrag" isExecutable="true">
+    <bpmn:startEvent id="StartEvent" name="Urlaub&#10;gewünscht" camunda:formKey="embedded:deployment:Forms.start-form.html">
+      <bpmn:outgoing>SequenceFlow_00lbjqu</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_00lbjqu" sourceRef="StartEvent" targetRef="UserTask_UrlaubGenehmigen" />
+    <bpmn:userTask id="UserTask_UrlaubGenehmigen" name="Urlaub genehmigen" camunda:formKey="embedded:deployment:Forms.freigeben.html">
+      <bpmn:incoming>SequenceFlow_00lbjqu</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_13wuhli</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="ExclusiveGateway_01ufizt" name="Genehmigt?">
+      <bpmn:incoming>SequenceFlow_13wuhli</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0lf6ien</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1rc803q</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_13wuhli" sourceRef="UserTask_UrlaubGenehmigen" targetRef="ExclusiveGateway_01ufizt" />
+    <bpmn:endEvent id="EndEvent_0yn0hxd" name="Urlaub abgelehnt">
+      <bpmn:incoming>SequenceFlow_0lf6ien</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0lf6ien" name="Nein" sourceRef="ExclusiveGateway_01ufizt" targetRef="EndEvent_0yn0hxd">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{ not approved }</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="ServiceTask_UrlaubstageAbbuchen" name="Urlaubstage abbuchen" camunda:type="external" camunda:topic="leaveAccount">
+      <bpmn:incoming>SequenceFlow_1rc803q</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0e8l9v4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0e8l9v4" sourceRef="ServiceTask_UrlaubstageAbbuchen" targetRef="IntermediateThrowEvent_0boyjjv" />
+    <bpmn:intermediateCatchEvent id="IntermediateThrowEvent_0boyjjv" name="1 Tag vor Urlaubsbeginn">
+      <bpmn:incoming>SequenceFlow_0e8l9v4</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1w931if</bpmn:outgoing>
+      <bpmn:timerEventDefinition>
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT1M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1w931if" sourceRef="IntermediateThrowEvent_0boyjjv" targetRef="ServiceTask_KollegenInformieren" />
+    <bpmn:serviceTask id="ServiceTask_KollegenInformieren" name="Kollegen informieren" camunda:type="external" camunda:topic="informColleagues">
+      <bpmn:incoming>SequenceFlow_1w931if</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0bzev7d</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_1awwf2c" name="Urlaub genehmigt">
+      <bpmn:incoming>SequenceFlow_0bzev7d</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0bzev7d" sourceRef="ServiceTask_KollegenInformieren" targetRef="EndEvent_1awwf2c" />
+    <bpmn:sequenceFlow id="SequenceFlow_1rc803q" sourceRef="ExclusiveGateway_01ufizt" targetRef="ServiceTask_UrlaubstageAbbuchen">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{ approved }</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Urlaubsantrag">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent">
+        <dc:Bounds x="155" y="127" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="146" y="163" width="53" height="25" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_00lbjqu_di" bpmnElement="SequenceFlow_00lbjqu">
+        <di:waypoint xsi:type="dc:Point" x="191" y="145" />
+        <di:waypoint xsi:type="dc:Point" x="245" y="145" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="218" y="130" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="UserTask_0nyakzu_di" bpmnElement="UserTask_UrlaubGenehmigen">
+        <dc:Bounds x="245" y="105" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_01ufizt_di" bpmnElement="ExclusiveGateway_01ufizt" isMarkerVisible="true">
+        <dc:Bounds x="393" y="120" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="388" y="94" width="60" height="13" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_13wuhli_di" bpmnElement="SequenceFlow_13wuhli">
+        <di:waypoint xsi:type="dc:Point" x="345" y="145" />
+        <di:waypoint xsi:type="dc:Point" x="393" y="145" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="369" y="120" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_0yn0hxd_di" bpmnElement="EndEvent_0yn0hxd">
+        <dc:Bounds x="400" y="229" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="376" y="265" width="84" height="13" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0lf6ien_di" bpmnElement="SequenceFlow_0lf6ien">
+        <di:waypoint xsi:type="dc:Point" x="418" y="170" />
+        <di:waypoint xsi:type="dc:Point" x="418" y="229" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="421" y="189.5" width="23" height="12" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_0wla8i2_di" bpmnElement="ServiceTask_UrlaubstageAbbuchen">
+        <dc:Bounds x="492" y="105" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0e8l9v4_di" bpmnElement="SequenceFlow_0e8l9v4">
+        <di:waypoint xsi:type="dc:Point" x="592" y="145" />
+        <di:waypoint xsi:type="dc:Point" x="646" y="145" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="619" y="130" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="IntermediateCatchEvent_19noi8p_di" bpmnElement="IntermediateThrowEvent_0boyjjv">
+        <dc:Bounds x="646" y="127" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="628" y="163" width="71" height="25" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1w931if_di" bpmnElement="SequenceFlow_1w931if">
+        <di:waypoint xsi:type="dc:Point" x="682" y="145" />
+        <di:waypoint xsi:type="dc:Point" x="724" y="145" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="703" y="130" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_0s6ma4p_di" bpmnElement="ServiceTask_KollegenInformieren">
+        <dc:Bounds x="724" y="105" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1awwf2c_di" bpmnElement="EndEvent_1awwf2c">
+        <dc:Bounds x="874" y="127" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="848" y="163" width="87" height="13" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0bzev7d_di" bpmnElement="SequenceFlow_0bzev7d">
+        <di:waypoint xsi:type="dc:Point" x="824" y="145" />
+        <di:waypoint xsi:type="dc:Point" x="874" y="145" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="849" y="120" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1rc803q_di" bpmnElement="SequenceFlow_1rc803q">
+        <di:waypoint xsi:type="dc:Point" x="443" y="145" />
+        <di:waypoint xsi:type="dc:Point" x="492" y="145" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="468" y="130" width="0" height="0" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

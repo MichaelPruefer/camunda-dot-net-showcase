@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using CamundaClient.Dto;
 
-namespace SimpleCalculationProcess
+namespace InsuranceApplicationProcess
 {
     [TestFixture]
     class CalculationProcessTest

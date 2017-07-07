@@ -1,0 +1,46 @@
+
+<p>
+    Schau mal, da will doch wirklich schon wieder jemand Urlaub haben!
+</p>
+
+<form class="form-horizontal">
+    <div class="control-group">
+        <label class="control-label">Name</label>
+        <div class="controls">
+            <input type="text"
+                   cam-variable-name="name"
+                   cam-variable-type="String"
+                   readonly
+                   class="form-control" />
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Startdatum</label>
+        <div class="controls">
+            <input type="text"
+                   cam-variable-name="vacationStartDate"
+                   cam-variable-type="Date"
+                   class="form-control"
+                   readonly />
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Dauer</label>
+        <div class="controls">
+            <input type="text"
+                   cam-variable-name="duration"
+                   cam-variable-type="Integer"
+                   readonly
+                   class="form-control" />
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Annehmen?</label>
+        <div class="controls">
+            <input type="checkbox"
+                   cam-variable-name="approved"
+                   cam-variable-type="Boolean"
+                   class="form-control" />
+        </div>
+    </div>
+</form>

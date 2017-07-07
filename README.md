@@ -4,6 +4,19 @@ You do not need to code Java in order to develop on Camunda BPM. This Showcase d
 
 A class library named "Camunda Client" is contained, which can serve as a basis for your own projects using Camunda. It abstracts the details of remote communication with the Camunda BPM Platform.
 
+# Run the examples
+
+* Make sure you have a Java Runtime on your machine (or [download and install Java](https://java.com/de/download/)).
+* Download the [Community Edition of Camunda as Tomcat distribution](https://camunda.org/download/) (or any other distribution if you have a preference). Alternatively you might prefer to [try out the enterprise edition](https://camunda.com/trial/). 
+* Unzip the distribution and start it using the batch file provided in the root folder.
+* Clone or download the project provided in this GitHub repository and open it in Visual Studio
+* Run the project of choice:
+    * Insurance Application: Simple application process for a fictive car insruance. Implements the example shown in the [Camunda Poster](https://camunda.com/bpm/features/poster.php). Contains all models in German and English. 
+         * [InsuranceApplicationCamundaTasklist](InsuranceApplicationCamundaTasklist/): Using the Camunda Tasklist and HTML forms
+         * [InsuranceApplicationWpfTasklist](InsuranceApplicationWpfTasklist/): Using a WPF Tasklist and WPF pages for task details
+    * [SimpleCalculationProcess](SimpleCalculationProcess/): Very easy process to get started
+    * [Urlaubsantrag](Urlaubsantrag/): Very easy vacation request process in German to get started
+
 # A Process Application in C&#35;
 
 A process application might be a simple console application in C#. The following screenshot shows the content of the [InsuranceApplicationCamundaTasklist](InsuranceApplicationCamundaTasklist) console appplication:
